@@ -1,0 +1,17 @@
+{
+  "name": "Diário de Bordo — Frota SMS Cuiabá",
+  "short_name": "Diário de Bordo",
+  "description": "Registro de saída e chegada dos veículos da Secretaria Municipal de Saúde de Cuiabá",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f6e56",
+  "theme_color": "#0f6e56",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diário de Bordo — Frota SMS Cuiabá</title>
+<meta name="theme-color" content="#0f6e56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diário de Bordo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --verde:#0f6e56; --verde-cl:#e3f4ee;
+  --bg:#f3f5f4; --card:#fff; --txt:#1b2421; --mut:#5d6b66; --bord:#d9e0dd;
+  --erro:#b3261e; --erro-cl:#fdecea; --amar:#b26a00; --amar-cl:#fff4dc; --ok:#1b7a3d;
+  --sombra:0 1px 3px rgba(0,0,0,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#111815; --card:#1a2420; --txt:#e8efec; --mut:#9fb0a9; --bord:#2c3a35;
+    --verde-cl:#12332a; --erro-cl:#3a1a18; --amar-cl:#3a2c0e; --sombra:none}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:var(--verde);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  position:sticky;top:0;z-index:20}
+header h1{margin:0;font-size:18px;font-weight:700}
+header small{opacity:.85;font-size:13px}
+main{padding:14px 14px calc(88px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bord);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs button{flex:1;background:none;border:0;padding:10px 4px 8px;font-size:12px;color:var(--mut);
+  display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px;position:relative;cursor:pointer}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button.on{color:var(--verde);font-weight:700}
+.badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--erro);color:#fff;border-radius:10px;
+  font-size:11px;min-width:18px;padding:0 5px;line-height:18px;text-align:center}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--sombra);border:1px solid var(--bord)}
+.card h2{margin:0 0 8px;font-size:16px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid var(--bord);
+  border-radius:10px;background:var(--card);color:var(--txt);min-height:48px}
+textarea{min-height:76px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--verde);border-color:var(--verde)}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:700;
+  background:var(--verde);color:#fff;min-height:52px;cursor:pointer;margin-top:16px}
+.btn:disabled{opacity:.6}
+.btn.sec{background:var(--card);color:var(--verde);border:2px solid var(--verde);margin-top:10px}
+.btn.perigo{background:var(--erro)}
+.btn.peq{display:inline-block;width:auto;padding:8px 14px;font-size:14px;min-height:40px;margin:0}
+.btn.saida{background:#1b6fb3}
+.btn.chegada{background:var(--ok)}
+.relogio{text-align:center;padding:10px}
+.relogio .hora{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--verde)}
+.relogio .data{color:var(--mut);font-size:14px}
+.hint{color:var(--mut);font-size:14px}
+.pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.pill.aberta{background:var(--amar-cl);color:var(--amar)}
+.pill.concluida{background:var(--verde-cl);color:var(--verde)}
+.placa{font-weight:800;font-size:18px;letter-spacing:1px}
+.linha{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.kv{font-size:14px;margin:2px 0}
+.kv b{color:var(--mut);font-weight:600}
+#banner{margin:0 0 12px}
+.aviso{border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px}
+.aviso.amar{background:var(--amar-cl);color:var(--amar)}
+.aviso.erro{background:var(--erro-cl);color:var(--erro)}
+.aviso.info{background:var(--verde-cl);color:var(--verde)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));
+  background:#222;color:#fff;padding:12px 18px;border-radius:12px;z-index:60;max-width:90%;font-size:15px;
+  box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;text-align:center}
+#toast.erro{background:var(--erro)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.overlay .box{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  max-height:92vh;overflow:auto}
+@media(min-width:600px){.overlay{align-items:center}.overlay .box{border-radius:18px}}
+.overlay h3{margin:0 0 6px}
+.sub{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+.sub button{flex:1;white-space:nowrap;border:1px solid var(--bord);background:var(--card);color:var(--txt);
+  border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer}
+.sub button.on{background:var(--verde);color:#fff;border-color:var(--verde)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.resumo div{background:var(--verde-cl);border-radius:12px;padding:10px;text-align:center}
+.resumo b{display:block;font-size:20px;color:var(--verde)}
+.resumo span{font-size:12px;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--bord);padding:6px 8px;text-align:left}
+th{font-size:12px;color:var(--mut);text-transform:uppercase}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+a{color:var(--verde)}
+.acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+#printArea{display:none}
+@media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff;color:#000}
+  header,nav.tabs,main,#toast,.overlay{display:none!important}
+  #printArea{display:block}
+  #printArea h1{font-size:16px;margin:0 0 4px}
+  #printArea p{margin:0 0 8px;font-size:11px}
+  #printArea table{font-size:10px}
+  #printArea th,#printArea td{border:1px solid #999;padding:3px 5px;color:#000}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Diário de Bordo</h1>
+  <small>Frota — Secretaria Municipal de Saúde de Cuiabá</small>
+</header>
+
+<main>
+  <div id="banner"></div>
+  <section id="v-viagem"></section>
+  <section id="v-curso" hidden></section>
+  <section id="v-gestao" hidden></section>
+</main>
+
+<nav class="tabs">
+  <button data-tab="viagem" class="on">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 13l2-6h14l2 6v4H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>
+    Registrar
+  </button>
+  <button data-tab="curso">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+    Em viagem<span class="badge" id="bgCurso" hidden>0</span>
+  </button>
+  <button data-tab="gestao">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    Gestão
+  </button>
+</nav>
+
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+'use strict';
+/* ============ Configuração ============ */
+const SB_URL = 'https://cqopgqmsjwfczhbiishj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxb3BncW1zandmY3poYmlpc2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDM5MzAsImV4cCI6MjEwNDIxOTkzMH0.O3HuqHax9u2ZEdW4gpodbfPxWU05Sujg94L2SicfmbI';
+const TZ = 'America/Cuiaba';
+const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
+
+/* ============ Utilidades ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }));
+const fmtData = iso => iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: TZ }) : '';
+const fmtHora = iso => iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }) : '';
+const fmtDH = iso => iso ? fmtData(iso) + ' ' + fmtHora(iso) : '—';
+const fmtKm = n => (n === null || n === undefined || n === '') ? '—' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const parseKm = v => { const n = parseFloat(String(v).replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : Math.round(n * 10) / 10; };
+const fmtDur = ms => { const m = Math.max(0, Math.round(ms / 60000)), h = Math.floor(m / 60); return h ? `${h} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`; };
+const mapaUrl = (la, ln) => `https://www.google.com/maps?q=${la},${ln}`;
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ignora */ } };
+const hojeISO = () => new Date().toLocaleDateString('sv-SE', { timeZone: TZ }); // AAAA-MM-DD
+let toastT;
+function toast(msg, erro) {
+  const t = $('#toast'); t.textContent = msg; t.className = erro ? 'erro' : ''; t.style.display = 'block';
+  clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', erro ? 6000 : 3500);
+}
+function dialogo({ titulo, msg, botoes }) {
+  return new Promise(res => {
+    const o = document.createElement('div'); o.className = 'overlay';
+    o.innerHTML = `<div class="box" role="dialog" aria-modal="true"><h3>${esc(titulo)}</h3><p>${esc(msg)}</p>
+      ${botoes.map((b, i) => `<button class="btn ${b.cls || ''}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>`;
+    o.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { o.remove(); res(botoes[+b.dataset.i].valor); } });
+    document.body.appendChild(o);
+  });
+}
+
+/* ============ Estado local / fila offline ============ */
+let veiculos = lsGet('diario_veiculos', []);
+let abertasServidor = lsGet('diario_abertas', []);
+let syncing = false, busy = false, selecionado = '';
+const lerFila = () => lsGet('diario_fila', []);
+const salvarFila = f => lsSet('diario_fila', f);
+
+function abertasAtuais() {
+  let lista = abertasServidor.slice();
+  for (const op of lerFila()) {
+    if (op.tipo === 'saida') {
+      const d = op.dados;
+      if (!lista.find(t => t.id === d.id)) lista.push({
+        id: d.id, veiculo_id: d.veiculo_id, placa: d.placa, veiculo: d.veiculo_nome, condutor: d.condutor, destino: d.destino,
+        servico: d.servico, km_inicial: d.km_inicial, saida_dispositivo: d.saida_dispositivo, pendente: true
+      });
+    } else if (op.tipo === 'chegada') lista = lista.filter(t => t.id !== op.dados.id);
+  }
+  return lista;
+}
+
+/* ============ Rede ============ */
+function classificar(error) {
+  if (!error) return { ok: true };
+  const msg = error.message || String(error);
+  const rede = !error.code && (error.status === 0 || /fetch|network|load failed|failed to|timeout/i.test(msg));
+  if (rede) return { rede: true };
+  if (error.code === '23505') return { msg: 'Este veículo já possui uma saída em aberto.' };
+  return { msg };
+}
+async function enviar(op) {
+  if (!sb) return { rede: true };
+  try {
+    let r;
+    if (op.tipo === 'saida') {
+      const d = op.dados;
+      r = await sb.rpc('diario_abrir_saida', {
+        p_id: d.id, p_veiculo_id: d.veiculo_id, p_condutor: d.condutor, p_servico: d.servico, p_destino: d.destino,
+        p_km_inicial: d.km_inicial, p_saida_dispositivo: d.saida_dispositivo,
+        p_lat: d.lat, p_lng: d.lng, p_precisao: d.precisao, p_endereco: d.endereco
+      });
+    } else {
+      const d = op.dados;
+      r = await sb.rpc('diario_registrar_chegada', {
+        p_id: d.id, p_km_final: d.km_final, p_chegada_dispositivo: d.chegada_dispositivo,
+        p_lat: d.lat, p_lng: d.lng, p_precisao: d.precisao, p_endereco: d.endereco, p_obs: d.obs
+      });
+    }
+    return classificar(r.error);
+  } catch (e) { return { rede: true }; }
+}
+async function carregarVeiculos() {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.from('diario_veiculos').select('id,placa,veiculo,setor,ativo').eq('ativo', true).order('placa');
+    if (!error && data) { veiculos = data; lsSet('diario_veiculos', data); }
+  } catch (e) { /* offline: usa cache */ }
+}
+async function carregarAbertas() {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.rpc('diario_viagens_abertas');
+    if (!error && data) { abertasServidor = data; lsSet('diario_abertas', data); }
+  } catch (e) { /* offline */ }
+}
+async function sincronizar() {
+  if (syncing) return; syncing = true;
+  const estavaAberta = () => !!selecionado && abertasAtuais().some(t => t.veiculo_id === selecionado);
+  const antes = estavaAberta();
+  try {
+    let fila = lerFila();
+    while (fila.length) {
+      const r = await enviar(fila[0]);
+      if (r.ok) fila.shift();
+      else if (r.rede) break;
+      else { const erros = lsGet('diario_erros', []); erros.push({ op: fila[0], msg: r.msg }); lsSet('diario_erros', erros); fila.shift(); }
+      salvarFila(fila);
+    }
+    await Promise.all([carregarVeiculos(), carregarAbertas()]);
+  } finally {
+    syncing = false; atualizarBanner(); atualizarBadge();
+    if (aba === 'viagem') { atualizarSelect(); if (!busy && estavaAberta() !== antes) renderPainel(); }
+    if (aba === 'curso') renderCurso();
+  }
+}
+/* Atualiza a lista de veículos sem apagar o que a pessoa está digitando */
+function atualizarSelect() {
+  const s = $('#selVeic'); if (!s) return;
+  const sv = $('#semVeic'); if (sv) sv.hidden = veiculos.length > 0;
+  const opts = veiculos.map(v => `<option value="${esc(v.id)}">${esc(v.placa)} — ${esc(v.veiculo)} · ${esc(v.setor)}</option>`).join('');
+  if (s.dataset.sig === opts) return;
+  s.innerHTML = '<option value="">Selecione a placa…</option>' + opts; s.dataset.sig = opts;
+  s.value = veiculos.find(v => v.id === selecionado) ? selecionado : '';
+  if (s.value !== selecionado) { selecionado = s.value; renderPainel(); }
+}
+window.addEventListener('online', sincronizar);
+
+/* ============ GPS ============ */
+function pegarGPS() {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res({ erro: 'Este aparelho ou navegador não oferece GPS.' });
+    navigator.geolocation.getCurrentPosition(
+      p => res({ lat: p.coords.latitude, lng: p.coords.longitude, precisao: p.coords.accuracy }),
+      e => res({ erro: e.code === 1 ? 'A permissão de localização foi negada. Ative a localização para este site nas configurações do aparelho/navegador.'
+        : e.code === 2 ? 'Não foi possível determinar a posição. Verifique se o GPS do aparelho está ligado.'
+        : 'Tempo esgotado ao obter a localização. Tente em um local com melhor sinal de GPS.' }),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+}
+async function capturarGPS() {
+  for (;;) {
+    const g = await pegarGPS();
+    if (!g.erro) return g;
+    const esc1 = await dialogo({ titulo: 'Localização indisponível', msg: g.erro, botoes: [
+      { label: 'Tentar novamente', valor: 'again' },
+      { label: 'Registrar sem localização', valor: 'sem', cls: 'sec' },
+      { label: 'Cancelar', valor: 'cancel', cls: 'sec' }] });
+    if (esc1 === 'sem') return { lat: null, lng: null, precisao: null };
+    if (esc1 === 'cancel') return null;
+  }
+}
+async function geocodificar(lat, lng) {
+  if (lat == null || !navigator.onLine) return null;
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=pt-BR&lat=${lat}&lon=${lng}`, { signal: ctl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && j.display_name ? String(j.display_name).slice(0, 400) : null;
+  } catch (e) { return null; }
+}
+
+/* ============ Navegação ============ */
+let aba = 'viagem';
+function irPara(nome) {
+  aba = nome;
+  $$('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === nome));
+  ['viagem', 'curso', 'gestao'].forEach(n => $('#v-' + n).hidden = n !== nome);
+  if (nome === 'viagem') renderViagem(); else if (nome === 'curso') { renderCurso(); carregarAbertas().then(() => { if (aba === 'curso') renderCurso(); atualizarBadge(); }); } else renderGestao();
+  window.scrollTo(0, 0);
+}
+$$('nav.tabs button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.tab)));
+function atualizarBadge() {
+  const n = abertasAtuais().length, b = $('#bgCurso'); b.textContent = n; b.hidden = n === 0;
+}
+function atualizarBanner() {
+  const fila = lerFila().length, erros = lsGet('diario_erros', []);
+  let h = '';
+  if (fila) h += `<div class="aviso amar"><b>${fila} registro(s) aguardando envio.</b> Estão salvos neste aparelho e serão enviados quando houver internet. <a href="#" id="lnkSync">Tentar agora</a></div>`;
+  if (erros.length) h += `<div class="aviso erro"><b>${erros.length} registro(s) foram recusados pelo servidor:</b><br>${erros.map(e => esc(e.msg)).join('<br>')}<br><a href="#" id="lnkLimpa">Dispensar aviso</a></div>`;
+  if (!navigator.onLine) h += `<div class="aviso info">Sem internet — você pode registrar normalmente, o envio é automático depois.</div>`;
+  $('#banner').innerHTML = h;
+  const s = $('#lnkSync'); if (s) s.onclick = e => { e.preventDefault(); sincronizar(); };
+  const l = $('#lnkLimpa'); if (l) l.onclick = e => { e.preventDefault(); lsSet('diario_erros', []); atualizarBanner(); };
+}
+window.addEventListener('offline', atualizarBanner);
+window.addEventListener('online', atualizarBanner);
+
+/* ============ Tela: Registrar ============ */
+let relogioT;
+function renderViagem(manter) {
+  const el = $('#v-viagem');
+  const atual = manter ? selecionado : selecionado;
+  el.innerHTML = `
+    <div class="card relogio"><div class="hora" id="rHora">--:--:--</div><div class="data" id="rData"></div>
+      <div class="hint">Data e hora do aparelho</div></div>
+    <div class="card">
+      <label for="selVeic" style="margin-top:0">Veículo</label>
+      <select id="selVeic"><option value="">Selecione a placa…</option>
+        ${veiculos.map(v => `<option value="${esc(v.id)}">${esc(v.placa)} — ${esc(v.veiculo)} · ${esc(v.setor)}</option>`).join('')}
+      </select>
+      <p class="hint" id="semVeic" ${veiculos.length ? 'hidden' : ''}>Nenhum veículo cadastrado ainda. Peça ao gestor para cadastrar em Gestão → Veículos.</p>
+    </div>
+    <div id="painel"></div>
+    <div id="instalar"></div>`;
+  $('#selVeic').value = veiculos.find(v => v.id === atual) ? atual : '';
+  selecionado = $('#selVeic').value;
+  $('#selVeic').dataset.sig = veiculos.map(v => `<option value="${esc(v.id)}">${esc(v.placa)} — ${esc(v.veiculo)} · ${esc(v.setor)}</option>`).join('');
+  $('#selVeic').onchange = e => { selecionado = e.target.value; renderPainel(); };
+  const tick = () => {
+    const n = new Date(); if (!$('#rHora')) return;
+    $('#rHora').textContent = n.toLocaleTimeString('pt-BR', { timeZone: TZ });
+    $('#rData').textContent = n.toLocaleDateString('pt-BR', { timeZone: TZ, weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  };
+  tick(); clearInterval(relogioT); relogioT = setInterval(tick, 1000);
+  renderPainel(); mostrarInstalar();
+}
+function renderPainel() {
+  const box = $('#painel'); if (!box) return;
+  if (!selecionado) { box.innerHTML = '<p class="hint" style="text-align:center">Escolha o veículo para registrar a saída ou a chegada.</p>'; return; }
+  const v = veiculos.find(x => x.id === selecionado); if (!v) return;
+  const t = abertasAtuais().find(x => x.veiculo_id === v.id);
+  t ? renderChegada(v, t) : renderSaida(v);
+}
+async function kmSugerido(id) {
+  let km = lsGet('diario_km_' + id, null);
+  if (sb && navigator.onLine) {
+    try { const { data, error } = await sb.rpc('diario_ultimo_km', { p_veiculo_id: id }); if (!error && data !== null) km = Number(data); } catch (e) { /* offline */ }
+  }
+  return km;
+}
+function renderSaida(v) {
+  $('#painel').innerHTML = `
+    <div class="card">
+      <div class="linha"><span class="placa">${esc(v.placa)}</span><span class="pill concluida">Disponível</span></div>
+      <div class="kv"><b>Veículo:</b> ${esc(v.veiculo)}</div><div class="kv"><b>Setor:</b> ${esc(v.setor)}</div>
+    </div>
+    <div class="card">
+      <h2>Registrar saída</h2>
+      <label for="fCond" style="margin-top:0">Nome do condutor</label>
+      <input id="fCond" autocomplete="name" maxlength="120" placeholder="Nome completo" value="${esc(lsGet('diario_condutor', ''))}">
+      <label for="fKm">Quilometragem inicial (odômetro)</label>
+      <input id="fKm" inputmode="decimal" placeholder="Ex.: 45230">
+      <div class="hint" id="kmHint"></div>
+      <label for="fServ">Informações do serviço</label>
+      <textarea id="fServ" maxlength="500" placeholder="Ex.: Entrega de medicamentos, transporte de equipe técnica…"></textarea>
+      <label for="fDest">Destino</label>
+      <input id="fDest" maxlength="300" placeholder="Ex.: UBS Pedra 90 — Av. …">
+      <button class="btn saida" id="btnSaida">Registrar saída</button>
+      <p class="hint">Ao registrar, o app grava a data, a hora e a localização (GPS) do aparelho.</p>
+    </div>`;
+  kmSugerido(v.id).then(km => {
+    const h = $('#kmHint'), f = $('#fKm'); if (!h || selecionado !== v.id) return;
+    if (km !== null && km !== undefined) { h.textContent = `Último km registrado: ${fmtKm(km)}`; if (!f.value) f.value = String(km).replace('.', ','); }
+  });
+  $('#btnSaida').onclick = () => registrarSaida(v);
+}
+function renderChegada(v, t) {
+  $('#painel').innerHTML = `
+    <div class="card">
+      <div class="linha"><span class="placa">${esc(v.placa)}</span><span class="pill aberta">Em viagem</span></div>
+      <div class="kv"><b>Veículo:</b> ${esc(v.veiculo)} · ${esc(v.setor)}</div>
+      <div class="kv"><b>Condutor:</b> ${esc(t.condutor)}</div>
+      <div class="kv"><b>Destino:</b> ${esc(t.destino)}</div>
+      <div class="kv"><b>Serviço:</b> ${esc(t.servico)}</div>
+      <div class="kv"><b>Saída:</b> ${fmtDH(t.saida_dispositivo)} · <b>Km inicial:</b> ${fmtKm(t.km_inicial)}</div>
+      <div class="kv"><b>Tempo fora:</b> ${fmtDur(Date.now() - new Date(t.saida_dispositivo))}</div>
+      ${t.pendente ? '<div class="aviso amar" style="margin-top:8px">Saída salva no aparelho, ainda não enviada.</div>' : ''}
+    </div>
+    <div class="card">
+      <h2>Registrar chegada</h2>
+      <label for="fKmF" style="margin-top:0">Quilometragem final (odômetro)</label>
+      <input id="fKmF" inputmode="decimal" placeholder="Maior ou igual a ${fmtKm(t.km_inicial)}">
+      <label for="fObs">Observações (opcional)</label>
+      <textarea id="fObs" maxlength="1000" placeholder="Ocorrências, abastecimento, avarias…"></textarea>
+      <button class="btn chegada" id="btnChegada">Registrar chegada</button>
+      <p class="hint">Ao registrar, o app grava a data, a hora e a localização (GPS) do aparelho.</p>
+    </div>`;
+  $('#btnChegada').onclick = () => registrarChegada(v, t);
+}
+async function finalizarRegistro(op, btn, rotulo, msgOk) {
+  const r = await despachar(op);
+  busy = false; btn.disabled = false; btn.textContent = rotulo;
+  if (!r.ok) {
+    toast(r.msg || 'Não foi possível registrar.', true);
+    if (/em aberto/i.test(r.msg || '')) { await carregarAbertas(); atualizarBadge(); renderPainel(); }
+    return;
+  }
+  toast(r.offline ? 'Sem internet: registro salvo no aparelho e será enviado automaticamente.' : msgOk);
+  atualizarBanner(); atualizarBadge(); renderPainel();
+}
+async function despachar(op) {
+  const r = await enviar(op);
+  if (r.ok) { await carregarAbertas(); return { ok: true }; }
+  if (r.rede) { const f = lerFila(); f.push(op); salvarFila(f); return { ok: true, offline: true }; }
+  return { ok: false, msg: r.msg };
+}
+async function registrarSaida(v) {
+  if (busy) return;
+  const condutor = $('#fCond').value.trim(), km = parseKm($('#fKm').value), servico = $('#fServ').value.trim(), destino = $('#fDest').value.trim();
+  if (!condutor) return toast('Informe o nome do condutor.', true);
+  if (km === null || km < 0) return toast('Informe a quilometragem inicial.', true);
+  if (!servico) return toast('Informe as informações do serviço.', true);
+  if (!destino) return toast('Informe o destino.', true);
+  const btn = $('#btnSaida'); busy = true; btn.disabled = true; btn.textContent = 'Obtendo localização…';
+  const gps = await capturarGPS();
+  if (!gps) { busy = false; btn.disabled = false; btn.textContent = 'Registrar saída'; return; }
+  const agora = new Date().toISOString();
+  btn.textContent = 'Registrando…';
+  const endereco = await geocodificar(gps.lat, gps.lng);
+  lsSet('diario_condutor', condutor); lsSet('diario_km_' + v.id, km);
+  const op = { tipo: 'saida', dados: { id: uuid(), veiculo_id: v.id, placa: v.placa, veiculo_nome: v.veiculo, condutor, servico, destino,
+    km_inicial: km, saida_dispositivo: agora, lat: gps.lat, lng: gps.lng, precisao: gps.precisao, endereco } };
+  await finalizarRegistro(op, btn, 'Registrar saída', `Saída registrada às ${fmtHora(agora)}. Boa viagem!`);
+}
+async function registrarChegada(v, t) {
+  if (busy) return;
+  const km = parseKm($('#fKmF').value), obs = $('#fObs').value.trim();
+  if (km === null) return toast('Informe a quilometragem final.', true);
+  if (km < Number(t.km_inicial)) return toast(`A quilometragem final não pode ser menor que a inicial (${fmtKm(t.km_inicial)}).`, true);
+  const btn = $('#btnChegada'); busy = true; btn.disabled = true; btn.textContent = 'Obtendo localização…';
+  const gps = await capturarGPS();
+  if (!gps) { busy = false; btn.disabled = false; btn.textContent = 'Registrar chegada'; return; }
+  const agora = new Date().toISOString();
+  btn.textContent = 'Registrando…';
+  const endereco = await geocodificar(gps.lat, gps.lng);
+  lsSet('diario_km_' + v.id, km);
+  const op = { tipo: 'chegada', dados: { id: t.id, km_final: km, chegada_dispositivo: agora, lat: gps.lat, lng: gps.lng, precisao: gps.precisao, endereco, obs } };
+  await finalizarRegistro(op, btn, 'Registrar chegada', `Chegada registrada às ${fmtHora(agora)}. Percorrido: ${fmtKm(km - Number(t.km_inicial))} km.`);
+}
+
+/* ============ Tela: Em viagem ============ */
+function renderCurso() {
+  const el = $('#v-curso'), lista = abertasAtuais();
+  el.innerHTML = `<h2 style="margin:4px 2px 10px;font-size:18px">Veículos em viagem agora</h2>` +
+    (lista.length ? lista.map(t => `
+      <div class="card"><div class="linha"><span class="placa">${esc(t.placa)}</span><span class="pill aberta">Em viagem</span></div>
+        <div class="kv">${esc(t.veiculo || '')}</div>
+        <div class="kv"><b>Condutor:</b> ${esc(t.condutor)}</div>
+        <div class="kv"><b>Destino:</b> ${esc(t.destino)}</div>
+        <div class="kv"><b>Saída:</b> ${fmtDH(t.saida_dispositivo)} (${fmtDur(Date.now() - new Date(t.saida_dispositivo))} fora) · <b>Km:</b> ${fmtKm(t.km_inicial)}</div>
+        <button class="btn chegada peq" style="margin-top:10px" data-v="${esc(t.veiculo_id)}">Registrar chegada</button>
+      </div>`).join('') : '<div class="card hint">Nenhum veículo em viagem no momento.</div>');
+  $$('button[data-v]', el).forEach(b => b.onclick = () => { selecionado = b.dataset.v; irPara('viagem'); });
+}
+
+/* ============ Instalação (PWA) ============ */
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; mostrarInstalar(); });
+function mostrarInstalar() {
+  const el = $('#instalar'); if (!el) return;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone || lsGet('diario_instalar_ok', false)) { el.innerHTML = ''; return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (promptInstalar) {
+    el.innerHTML = `<div class="card"><b>Instale o app</b><p class="hint">Adicione o Diário de Bordo à tela inicial do celular.</p>
+      <button class="btn peq" id="btnInst">Instalar</button> <button class="btn sec peq" id="btnInstNao">Agora não</button></div>`;
+    $('#btnInst').onclick = async () => { promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar = null; el.innerHTML = ''; };
+  } else if (ios) {
+    el.innerHTML = `<div class="card"><b>Instale o app no iPhone</b><p class="hint">No Safari, toque em <b>Compartilhar</b> (quadrado com seta) e depois em <b>Adicionar à Tela de Início</b>.</p>
+      <button class="btn sec peq" id="btnInstNao">Entendi</button></div>`;
+  } else return;
+  const nao = $('#btnInstNao'); if (nao) nao.onclick = () => { lsSet('diario_instalar_ok', true); el.innerHTML = ''; };
+}
+
+/* ============ Gestão ============ */
+let sessao = null, ehAdmin = false, gTab = 'hist';
+async function checarAdmin() {
+  ehAdmin = false;
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession(); sessao = session;
+    if (session) { const { data, error } = await sb.rpc('is_diario_admin'); ehAdmin = !error && data === true; }
+  } catch (e) { /* offline */ }
+}
+async function renderGestao() {
+  const el = $('#v-gestao');
+  el.innerHTML = '<div class="card hint">Carregando…</div>';
+  await checarAdmin();
+  if (!sessao) return renderLogin();
+  if (!ehAdmin) {
+    el.innerHTML = `<div class="card"><h2>Sem permissão</h2><p>A conta <b>${esc(sessao.user.email)}</b> não é administradora do Diário de Bordo.</p>
+      <button class="btn sec" id="btnSair">Sair</button></div>`;
+    $('#btnSair').onclick = sair; return;
+  }
+  el.innerHTML = `
+    <div class="linha" style="align-items:center;margin-bottom:8px"><span class="hint">${esc(sessao.user.email)}</span>
+      <button class="btn sec peq" id="btnSair">Sair</button></div>
+    <div class="sub">
+      <button data-g="hist">Histórico</button><button data-g="rel">Relatório</button><button data-g="veic">Veículos</button>
+    </div><div id="gCorpo"></div>`;
+  $('#btnSair').onclick = sair;
+  $$('.sub button', el).forEach(b => { b.classList.toggle('on', b.dataset.g === gTab); b.onclick = () => { gTab = b.dataset.g; renderGestao(); }; });
+  if (gTab === 'hist') renderHistorico(); else if (gTab === 'rel') renderRelatorio(); else renderVeiculosAdmin();
+}
+function renderLogin() {
+  $('#v-gestao').innerHTML = `<div class="card"><h2>Acesso da gestão</h2>
+    <p class="hint">Entre com o e-mail e a senha de administrador para ver histórico, relatórios e cadastrar veículos. Condutores não precisam de login.</p>
+    <label for="lgEmail">E-mail</label><input id="lgEmail" type="email" autocomplete="username" inputmode="email">
+    <label for="lgSenha">Senha</label><input id="lgSenha" type="password" autocomplete="current-password">
+    <button class="btn" id="btnEntrar">Entrar</button></div>`;
+  const entrar = async () => {
+    const b = $('#btnEntrar'); b.disabled = true; b.textContent = 'Entrando…';
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email: $('#lgEmail').value.trim(), password: $('#lgSenha').value });
+      if (error) toast('E-mail ou senha incorretos.', true); else return renderGestao();
+    } catch (e) { toast('Sem conexão com o servidor.', true); }
+    b.disabled = false; b.textContent = 'Entrar';
+  };
+  $('#btnEntrar').onclick = entrar; $('#lgSenha').onkeydown = e => { if (e.key === 'Enter') entrar(); };
+}
+async function sair() { try { await sb.auth.signOut(); } catch (e) { /* */ } sessao = null; ehAdmin = false; renderGestao(); }
+
+/* --- consulta / cálculo --- */
+const rodado = t => (t.km_final != null ? Number(t.km_final) - Number(t.km_inicial) : null);
+async function consultar(f) {
+  let q = sb.from('diario_viagens').select('*').order('saida_dispositivo', { ascending: false }).limit(2000);
+  if (f.de) q = q.gte('saida_dispositivo', `${f.de}T00:00:00-04:00`);
+  if (f.ate) q = q.lte('saida_dispositivo', `${f.ate}T23:59:59-04:00`);
+  if (f.veiculo_id) q = q.eq('veiculo_id', f.veiculo_id);
+  if (f.setor) q = q.eq('setor', f.setor);
+  if (f.condutor) q = q.ilike('condutor', `%${f.condutor.replace(/[%_]/g, '')}%`);
+  if (f.status) q = q.eq('status', f.status);
+  const { data, error } = await q;
+  if (error) throw error;
+  return data || [];
+}
+const primeiroDiaMes = () => hojeISO().slice(0, 8) + '01';
+let filtros = { de: primeiroDiaMes(), ate: hojeISO(), veiculo_id: '', setor: '', condutor: '', status: '' };
+let ultimaLista = [];
+
+async function todosVeiculosAdmin() {
+  const { data } = await sb.from('diario_veiculos').select('*').order('placa'); return data || [];
+}
+async function renderHistorico() {
+  const corpo = $('#gCorpo'), vs = await todosVeiculosAdmin();
+  const setores = [...new Set(vs.map(v => v.setor))].sort();
+  corpo.innerHTML = `
+    <div class="card"><div class="grid2">
+      <div><label style="margin-top:0">De</label><input type="date" id="fDe" value="${filtros.de}"></div>
+      <div><label style="margin-top:0">Até</label><input type="date" id="fAte" value="${filtros.ate}"></div></div>
+      <label>Veículo</label><select id="fVeic"><option value="">Todos</option>${vs.map(v => `<option value="${esc(v.id)}">${esc(v.placa)} — ${esc(v.veiculo)}</option>`).join('')}</select>
+      <div class="grid2"><div><label>Setor</label><select id="fSet"><option value="">Todos</option>${setores.map(s => `<option>${esc(s)}</option>`).join('')}</select></div>
+      <div><label>Situação</label><select id="fSit"><option value="">Todas</option><option value="aberta">Em viagem</option><option value="concluida">Concluídas</option></select></div></div>
+      <label>Condutor</label><input id="fCondB" placeholder="Parte do nome" value="${esc(filtros.condutor)}">
+      <button class="btn" id="btnBuscar">Buscar</button></div>
+    <div id="hRes"></div>`;
+  $('#fVeic').value = filtros.veiculo_id; $('#fSet').value = filtros.setor; $('#fSit').value = filtros.status;
+  const buscar = async () => {
+    filtros = { de: $('#fDe').value, ate: $('#fAte').value, veiculo_id: $('#fVeic').value, setor: $('#fSet').value, condutor: $('#fCondB').value.trim(), status: $('#fSit').value };
+    $('#hRes').innerHTML = '<div class="card hint">Buscando…</div>';
+    try { ultimaLista = await consultar(filtros); } catch (e) { $('#hRes').innerHTML = `<div class="aviso erro">Erro ao buscar: ${esc(e.message)}</div>`; return; }
+    desenharHistorico();
+  };
+  $('#btnBuscar').onclick = buscar; buscar();
+}
+function pontoGPS(la, ln, ender, rot) {
+  if (la == null) return `<div class="kv"><b>${rot}:</b> sem localização</div>`;
+  return `<div class="kv"><b>${rot}:</b> <a href="${mapaUrl(la, ln)}" target="_blank" rel="noopener">ver no mapa</a> (${Number(la).toFixed(5)}, ${Number(ln).toFixed(5)})${ender ? '<br><span class="hint">' + esc(ender) + '</span>' : ''}</div>`;
+}
+function desenharHistorico() {
+  const L = ultimaLista, km = L.reduce((s, t) => s + (rodado(t) || 0), 0), abertas = L.filter(t => t.status === 'aberta').length;
+  $('#hRes').innerHTML = `
+    <div class="resumo"><div><b>${L.length}</b><span>viagens</span></div><div><b>${fmtKm(km)}</b><span>km rodados</span></div><div><b>${abertas}</b><span>em viagem</span></div></div>
+    <div class="acoes" style="margin:0 0 10px"><button class="btn peq" id="btnCsv">Exportar CSV (Excel)</button><button class="btn sec peq" id="btnPdf">Imprimir / PDF</button></div>
+    ${L.map(t => `
+    <div class="card"><div class="linha"><span class="placa">${esc(t.placa)}</span><span class="pill ${t.status}">${t.status === 'aberta' ? 'Em viagem' : 'Concluída'}</span></div>
+      <div class="kv">${esc(t.veiculo || '')} · ${esc(t.setor || '')}</div>
+      <div class="kv"><b>Condutor:</b> ${esc(t.condutor)}</div>
+      <div class="kv"><b>Destino:</b> ${esc(t.destino)}</div>
+      <div class="kv"><b>Serviço:</b> ${esc(t.servico)}</div>
+      <div class="kv"><b>Saída:</b> ${fmtDH(t.saida_dispositivo)} · <b>Km:</b> ${fmtKm(t.km_inicial)}</div>
+      <div class="kv"><b>Chegada:</b> ${fmtDH(t.chegada_dispositivo)} · <b>Km:</b> ${fmtKm(t.km_final)}${rodado(t) !== null ? ` · <b>Rodado:</b> ${fmtKm(rodado(t))} km` : ''}</div>
+      ${pontoGPS(t.saida_lat, t.saida_lng, t.saida_endereco, 'GPS saída')}
+      ${pontoGPS(t.chegada_lat, t.chegada_lng, t.chegada_endereco, 'GPS chegada')}
+      ${t.observacoes ? `<div class="kv"><b>Obs.:</b> ${esc(t.observacoes)}</div>` : ''}
+      <div class="acoes"><button class="btn sec peq" data-ed="${esc(t.id)}">Editar</button><button class="btn perigo peq" data-del="${esc(t.id)}">Excluir</button></div>
+    </div>`).join('') || '<div class="card hint">Nenhuma viagem encontrada para o filtro.</div>'}`;
+  $('#btnCsv').onclick = () => exportarCsv(L); $('#btnPdf').onclick = () => imprimirHistorico(L);
+  $$('[data-ed]').forEach(b => b.onclick = () => editarViagem(L.find(t => t.id === b.dataset.ed)));
+  $$('[data-del]').forEach(b => b.onclick = async () => {
+    const t = L.find(x => x.id === b.dataset.del);
+    const r = await dialogo({ titulo: 'Excluir viagem?', msg: `${t.placa} — ${fmtDH(t.saida_dispositivo)} (${t.condutor}). Esta ação não pode ser desfeita.`, botoes: [{ label: 'Excluir', valor: true, cls: 'perigo' }, { label: 'Cancelar', valor: false, cls: 'sec' }] });
+    if (!r) return;
+    const { error } = await sb.from('diario_viagens').delete().eq('id', t.id);
+    if (error) return toast('Erro ao excluir: ' + error.message, true);
+    ultimaLista = ultimaLista.filter(x => x.id !== t.id); desenharHistorico(); toast('Viagem excluída.');
+  });
+}
+function editarViagem(t) {
+  const o = document.createElement('div'); o.className = 'overlay';
+  o.innerHTML = `<div class="box"><h3>Corrigir registro — ${esc(t.placa)}</h3>
+    <label>Condutor</label><input id="eCond" value="${esc(t.condutor)}" maxlength="120">
+    <label>Serviço</label><textarea id="eServ" maxlength="500">${esc(t.servico)}</textarea>
+    <label>Destino</label><input id="eDest" value="${esc(t.destino)}" maxlength="300">
+    <div class="grid2"><div><label>Km inicial</label><input id="eKmI" inputmode="decimal" value="${t.km_inicial ?? ''}"></div>
+    <div><label>Km final</label><input id="eKmF" inputmode="decimal" value="${t.km_final ?? ''}"></div></div>
+    <label>Observações</label><textarea id="eObs" maxlength="1000">${esc(t.observacoes || '')}</textarea>
+    <button class="btn" id="eSalvar">Salvar</button><button class="btn sec" id="eCancel">Cancelar</button></div>`;
+  document.body.appendChild(o);
+  $('#eCancel', o).onclick = () => o.remove();
+  $('#eSalvar', o).onclick = async () => {
+    const ki = parseKm($('#eKmI', o).value), kfTxt = $('#eKmF', o).value.trim(), kf = kfTxt ? parseKm(kfTxt) : null;
+    if (ki === null) return toast('Km inicial inválido.', true);
+    if (kfTxt && (kf === null || kf < ki)) return toast('Km final inválido (menor que o inicial).', true);
+    const upd = { condutor: $('#eCond', o).value.trim(), servico: $('#eServ', o).value.trim(), destino: $('#eDest', o).value.trim(), km_inicial: ki, km_final: kf, observacoes: $('#eObs', o).value.trim() || null };
+    if (!upd.condutor || !upd.servico || !upd.destino) return toast('Preencha condutor, serviço e destino.', true);
+    if (kf !== null && t.status === 'aberta') { upd.status = 'concluida'; upd.chegada_dispositivo = new Date().toISOString(); upd.chegada_servidor = upd.chegada_dispositivo; }
+    const { data, error } = await sb.from('diario_viagens').update(upd).eq('id', t.id).select().single();
+    if (error) return toast('Erro ao salvar: ' + error.message, true);
+    ultimaLista = ultimaLista.map(x => x.id === t.id ? data : x); o.remove(); desenharHistorico(); toast('Registro atualizado.');
+  };
+}
+function csvCel(v) {
+  let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function baixar(nome, texto, tipo) {
+  const blob = new Blob(['﻿' + texto], { type: tipo }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+const kmCsv = n => n == null ? '' : String(n).replace('.', ',');
+function exportarCsv(L) {
+  const cab = ['Placa', 'Veículo', 'Setor', 'Condutor', 'Serviço', 'Destino', 'Data saída', 'Hora saída', 'Km inicial', 'Data chegada', 'Hora chegada', 'Km final', 'Km rodado', 'GPS saída', 'Endereço saída', 'GPS chegada', 'Endereço chegada', 'Observações', 'Situação'];
+  const linhas = L.map(t => [t.placa, t.veiculo, t.setor, t.condutor, t.servico, t.destino, fmtData(t.saida_dispositivo), fmtHora(t.saida_dispositivo), kmCsv(t.km_inicial),
+    fmtData(t.chegada_dispositivo), fmtHora(t.chegada_dispositivo), kmCsv(t.km_final), kmCsv(rodado(t)),
+    t.saida_lat != null ? `${t.saida_lat}, ${t.saida_lng}` : '', t.saida_endereco, t.chegada_lat != null ? `${t.chegada_lat}, ${t.chegada_lng}` : '', t.chegada_endereco, t.observacoes, t.status === 'aberta' ? 'Em viagem' : 'Concluída']);
+  baixar(`diario-de-bordo_${filtros.de}_a_${filtros.ate}.csv`, [cab, ...linhas].map(l => l.map(csvCel).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+}
+function imprimirHistorico(L) {
+  $('#printArea').innerHTML = `<h1>Diário de Bordo — Frota SMS Cuiabá</h1><p>Período: ${filtros.de.split('-').reverse().join('/')} a ${filtros.ate.split('-').reverse().join('/')} · ${L.length} viagens · ${fmtKm(L.reduce((s, t) => s + (rodado(t) || 0), 0))} km rodados</p>
+    <table><thead><tr><th>Placa</th><th>Setor</th><th>Condutor</th><th>Destino / serviço</th><th>Saída</th><th class="n">Km ini.</th><th>Chegada</th><th class="n">Km fin.</th><th class="n">Rodado</th></tr></thead><tbody>
+    ${L.map(t => `<tr><td>${esc(t.placa)}</td><td>${esc(t.setor)}</td><td>${esc(t.condutor)}</td><td>${esc(t.destino)} — ${esc(t.servico)}</td><td>${fmtDH(t.saida_dispositivo)}</td><td class="n">${fmtKm(t.km_inicial)}</td><td>${fmtDH(t.chegada_dispositivo)}</td><td class="n">${fmtKm(t.km_final)}</td><td class="n">${fmtKm(rodado(t))}</td></tr>`).join('')}</tbody></table>`;
+  window.print();
+}
+
+/* --- Relatório --- */
+async function renderRelatorio() {
+  const corpo = $('#gCorpo');
+  corpo.innerHTML = `<div class="card"><div class="grid2"><div><label style="margin-top:0">De</label><input type="date" id="rDe" value="${filtros.de}"></div>
+    <div><label style="margin-top:0">Até</label><input type="date" id="rAte" value="${filtros.ate}"></div></div>
+    <button class="btn" id="rGerar">Gerar relatório</button></div><div id="rRes"></div>`;
+  const gerar = async () => {
+    filtros.de = $('#rDe').value; filtros.ate = $('#rAte').value;
+    $('#rRes').innerHTML = '<div class="card hint">Calculando…</div>';
+    let L; try { L = await consultar({ de: filtros.de, ate: filtros.ate }); } catch (e) { $('#rRes').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; return; }
+    const agrupar = chave => { const m = new Map(); for (const t of L) { const k = chave(t) || '—'; const g = m.get(k) || { n: 0, km: 0 }; g.n++; g.km += rodado(t) || 0; m.set(k, g); } return [...m.entries()].sort((a, b) => b[1].km - a[1].km); };
+    const porV = agrupar(t => `${t.placa} — ${t.veiculo || ''}`), porS = agrupar(t => t.setor), porC = agrupar(t => t.condutor);
+    const tab = (tit, arr) => `<div class="card"><h2>${tit}</h2><table><thead><tr><th>${tit.replace('Por ', '')}</th><th class="n">Viagens</th><th class="n">Km</th></tr></thead><tbody>${arr.map(([k, g]) => `<tr><td>${esc(k)}</td><td class="n">${g.n}</td><td class="n">${fmtKm(g.km)}</td></tr>`).join('') || '<tr><td colspan="3" class="hint">Sem dados</td></tr>'}</tbody></table></div>`;
+    $('#rRes').innerHTML = `<div class="resumo"><div><b>${L.length}</b><span>viagens</span></div><div><b>${fmtKm(L.reduce((s, t) => s + (rodado(t) || 0), 0))}</b><span>km rodados</span></div><div><b>${porV.length}</b><span>veículos usados</span></div></div>
+      <div class="acoes" style="margin:0 0 10px"><button class="btn peq" id="rCsv">Exportar CSV</button><button class="btn sec peq" id="rPdf">Imprimir / PDF</button></div>
+      ${tab('Por veículo', porV)}${tab('Por setor', porS)}${tab('Por condutor', porC)}`;
+    $('#rCsv').onclick = () => baixar(`relatorio-frota_${filtros.de}_a_${filtros.ate}.csv`, [['Veículo', 'Viagens', 'Km rodados'], ...porV.map(([k, g]) => [k, g.n, kmCsv(g.km)])].map(l => l.map(csvCel).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+    $('#rPdf').onclick = () => { $('#printArea').innerHTML = `<h1>Relatório da Frota — SMS Cuiabá</h1><p>Período: ${filtros.de.split('-').reverse().join('/')} a ${filtros.ate.split('-').reverse().join('/')}</p>` + $$('#rRes .card').map(c => c.innerHTML).join('<br>'); window.print(); };
+  };
+  $('#rGerar').onclick = gerar; gerar();
+}
+
+/* --- Veículos (admin) --- */
+function normalizarPlaca(p) {
+  const s = String(p).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (/^[A-Z]{3}\d{4}$/.test(s)) return s.slice(0, 3) + '-' + s.slice(3);
+  return s;
+}
+async function renderVeiculosAdmin() {
+  const corpo = $('#gCorpo'), vs = await todosVeiculosAdmin(), setores = [...new Set(vs.map(v => v.setor))].sort();
+  corpo.innerHTML = `
+    <div class="card"><h2>Cadastrar veículo</h2>
+      <label for="nPlaca" style="margin-top:0">Placa</label><input id="nPlaca" maxlength="8" placeholder="ABC1D23" autocapitalize="characters">
+      <label for="nVeic">Veículo (modelo)</label><input id="nVeic" maxlength="80" placeholder="Ex.: Fiat Strada, Van Sprinter…">
+      <label for="nSetor">Setor que ocupa o veículo</label><input id="nSetor" maxlength="80" list="dlSetores" placeholder="Ex.: Vigilância Sanitária"><datalist id="dlSetores">${setores.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+      <button class="btn" id="btnNovo">Cadastrar</button></div>
+    <div class="card"><h2>Veículos cadastrados (${vs.length})</h2>
+      ${vs.map(v => `<div class="linha" style="align-items:center;border-top:1px solid var(--bord);padding:8px 0">
+        <div><span class="placa" style="font-size:16px">${esc(v.placa)}</span> ${v.ativo ? '' : '<span class="pill aberta">Inativo</span>'}<div class="kv">${esc(v.veiculo)} · ${esc(v.setor)}</div></div>
+        <div class="acoes" style="margin:0"><button class="btn sec peq" data-e="${esc(v.id)}">Editar</button><button class="btn sec peq" data-a="${esc(v.id)}">${v.ativo ? 'Inativar' : 'Reativar'}</button></div></div>`).join('') || '<p class="hint">Nenhum veículo cadastrado.</p>'}</div>`;
+  $('#btnNovo').onclick = async () => {
+    const placa = normalizarPlaca($('#nPlaca').value), veic = $('#nVeic').value.trim(), setor = $('#nSetor').value.trim();
+    if (placa.length < 6 || !veic || !setor) return toast('Preencha placa, veículo e setor.', true);
+    const { error } = await sb.from('diario_veiculos').insert({ placa, veiculo: veic, setor });
+    if (error) return toast(error.code === '23505' ? 'Já existe um veículo com esta placa.' : 'Erro: ' + error.message, true);
+    toast('Veículo cadastrado.'); await carregarVeiculos(); renderVeiculosAdmin();
+  };
+  $$('[data-a]', corpo).forEach(b => b.onclick = async () => {
+    const v = vs.find(x => x.id === b.dataset.a);
+    const { error } = await sb.from('diario_veiculos').update({ ativo: !v.ativo }).eq('id', v.id);
+    if (error) return toast('Erro: ' + error.message, true);
+    await carregarVeiculos(); renderVeiculosAdmin();
+  });
+  $$('[data-e]', corpo).forEach(b => b.onclick = () => {
+    const v = vs.find(x => x.id === b.dataset.e), o = document.createElement('div'); o.className = 'overlay';
+    o.innerHTML = `<div class="box"><h3>Editar veículo</h3><label>Placa</label><input id="xPlaca" value="${esc(v.placa)}" maxlength="8">
+      <label>Veículo</label><input id="xVeic" value="${esc(v.veiculo)}" maxlength="80"><label>Setor</label><input id="xSetor" value="${esc(v.setor)}" maxlength="80">
+      <button class="btn" id="xSalvar">Salvar</button><button class="btn sec" id="xCancel">Cancelar</button></div>`;
+    document.body.appendChild(o); $('#xCancel', o).onclick = () => o.remove();
+    $('#xSalvar', o).onclick = async () => {
+      const upd = { placa: normalizarPlaca($('#xPlaca', o).value), veiculo: $('#xVeic', o).value.trim(), setor: $('#xSetor', o).value.trim() };
+      if (upd.placa.length < 6 || !upd.veiculo || !upd.setor) return toast('Preencha todos os campos.', true);
+      const { error } = await sb.from('diario_veiculos').update(upd).eq('id', v.id);
+      if (error) return toast(error.code === '23505' ? 'Já existe um veículo com esta placa.' : 'Erro: ' + error.message, true);
+      o.remove(); toast('Veículo atualizado.'); await carregarVeiculos(); renderVeiculosAdmin();
+    };
+  });
+}
+
+/* ============ Início ============ */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+atualizarBanner(); atualizarBadge(); renderViagem();
+sincronizar();
+setInterval(() => { if (navigator.onLine && lerFila().length) sincronizar(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && navigator.onLine) sincronizar(); });
+</script>
+</body>
+</html>
