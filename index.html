@@ -267,6 +267,19 @@ const Store = {
     if (this.online){ const { error } = await this.sb.from('orc_orcamentos').delete().eq('id', id); if (error) throw error; return; }
     const all = await this._lget('orcs', {}); delete all[id]; await IDB.set('orcs', all);
   },
+  // ---- perfis de contrato (empresa: BDI, desconto, regime) – cada contrato tem os seus
+  async listCtr(){
+    if (this.online){ try { const { data, error } = await this.sb.from('orc_contratos').select('*').order('nome'); if (error) throw error; return data.map(r => ({ ...r.dados, id:r.id, nome:r.nome })); } catch(e){ console.warn(e); } }
+    return Object.values(await this._lget('ctrs', {})).sort((a, b) => a.nome.localeCompare(b.nome));
+  },
+  async saveCtr(p){
+    if (this.online){ const { error } = await this.sb.from('orc_contratos').upsert({ id:p.id, nome:p.nome, dados:p, atualizado_em:new Date().toISOString() }); if (error) throw error; return; }
+    const all = await this._lget('ctrs', {}); all[p.id] = p; await IDB.set('ctrs', all);
+  },
+  async delCtr(id){
+    if (this.online){ const { error } = await this.sb.from('orc_contratos').delete().eq('id', id); if (error) throw error; return; }
+    const all = await this._lget('ctrs', {}); delete all[id]; await IDB.set('ctrs', all);
+  },
   // ---- composições próprias
   async listProp(){
     if (this.online){ const { data, error } = await this.sb.from('orc_proprias').select('*').order('codigo'); if (error) throw error; return data.map(r => ({ ...r.dados, id:r.id, codigo:r.codigo })); }
@@ -431,8 +444,24 @@ function bdiCalc(b, dif=false, des=false){
 }
 function novoOrc(){
   return { id:uid(), nome:'Novo orçamento', orgao:ORG.l2, obra:'', endereco:'', municipio:'Cuiabá - MT', assunto:'', os:'', local:'Cuiabá – MT', processo:'', data:today(),
-    responsavel:'', crea:'', matricula:'', desconto:0, contrato:{ empresa:'', cnpj:'', telefone:'', endereco:'', numero:'', dataOS:'' }, bases:{ SINAPI:'SINAPI-MT-2026-09' }, des:false, bdi:JSON.parse(JSON.stringify(BDI_DEF)), adm:6,
+    responsavel:'', crea:'', matricula:'', desconto:0, contrato:{ empresa:'', cnpj:'', telefone:'', endereco:'', numero:'', dataOS:'' }, bases:{ SINAPI:'SINAPI-MT-2026-09' }, des:true, bdi:JSON.parse(JSON.stringify(BDI_DEF)), adm:6,
     itens:[], crono:{ meses:6, dist:{} }, medicoes:[] };
+}
+
+/* Modelo SMS/CTOSM – etapas e serviços padrão (base: planilha contratual USF Cidade Verde OS 011/2026, revisada).
+   ['E', nível, título] = etapa · ['S', código SINAPI] = serviço da base vigente · ['M', fonte, código, descrição, und, preço] = cotação/ORSE/própria */
+const MODELO_SMS = [["E",1,"SERVIÇOS TÉCNICO-PROFISSIONAIS"],["E",2,"PROJETOS EXECUTIVOS (elétrica, hidráulica, estrutural)"],["S","90778"],["S","90769"],["E",1,"SERVIÇOS PRELIMINARES"],["E",2,"CANTEIRO DE OBRAS"],["S","103689"],["S","98458"],["S","98459"],["S","10776"],["M","MANUAL","COT-PROV","LIGAÇÕES PROVISÓRIAS DE ÁGUA, ESGOTO E ENERGIA PARA O CANTEIRO - COTAÇÃO","VB",3800.0],["E",2,"DEMOLIÇÕES E REMOÇÕES (quantificar pela memória de cálculo do levantamento)"],["S","97665"],["S","104793"],["S","97660"],["S","97633"],["S","97622"],["S","97640"],["S","97644"],["S","100205"],["M","PRÓPRIA","INS-19540755","CAÇAMBA BOTA-FORA 6 M³ (volume demolido × empolamento 1,3 ÷ 6)","UN",616.66],["E",2,"LOCAÇÃO DA OBRA (perímetro do gabarito)"],["S","99059"],["S","99062"],["E",2,"MOVIMENTO DE TERRA"],["S","93358"],["S","96523"],["S","96527"],["S","104737"],["S","94319"],["E",1,"INFRAESTRUTURA / FUNDAÇÕES"],["S","96619"],["S","96617"],["S","96535"],["S","96541"],["S","96542"],["S","104916"],["S","104917"],["S","104918"],["S","104919"],["S","104920"],["S","96544"],["S","96555"],["S","98557"],["E",1,"SUPERESTRUTURA"],["S","92269"],["S","92270"],["S","92419"],["S","92456"],["S","92759"],["S","92760"],["S","92761"],["S","92762"],["S","92763"],["S","94965"],["S","103669"],["S","103674"],["S","101959"],["S","105022"],["S","105027"],["E",1,"PAREDES E PAINÉIS"],["S","103350"],["S","103334"],["S","93203"],["E",1,"ESQUADRIAS"],["E",2,"ESQUADRIAS DE FERRO"],["S","37561"],["S","4948"],["M","ORSE","S11709","GRADE EM BARRA CHATA DE FERRO 1\"X1\" E MOLDURA EM BARRA CHATA 1\"X1\", CONFORME PROJETO","M2",1104.29],["S","100720"],["S","100758"],["S","99861"],["E",2,"ESQUADRIAS DE ALUMÍNIO E VIDRO"],["S","94569"],["S","94570"],["M","SINAPI","91338","PORTA DE ALUMÍNIO DE ABRIR COM LAMBRI, COM GUARNIÇÃO, FIXAÇÃO COM PARAFUSOS - FORNECIMENTO E INSTALAÇÃO (SINAPI 08/2026)","M2",928.87],["S","94805"],["S","100702"],["M","ORSE","S11347","FORNECIMENTO E INSTALAÇÃO DE FACHADA EM PELE DE VIDRO, EM VIDRO LAMINADO 3+3 REFLETIVO","M2",1749.08],["E",2,"ESQUADRIAS DE MADEIRA E FERRAGENS"],["S","90844"],["S","90830"],["S","90831"],["S","102219"],["E",2,"VIDROS E ESPELHOS"],["M","ORSE","S01889","ESPELHO PLANO 4MM","M2",473.0],["E",1,"COBERTURA"],["E",2,"ESTRUTURA METÁLICA"],["S","92616"],["S","104314"],["S","100722"],["E",2,"TELHAMENTO, CALHAS E RUFOS"],["S","94216"],["S","94229"],["S","94227"],["S","94231"],["S","101979"],["S","89578"],["S","89512"],["E",1,"IMPERMEABILIZAÇÃO"],["S","98557"],["S","98555"],["S","98556"],["E",1,"REVESTIMENTO DE PAREDES"],["E",2,"INTERNO (chapisco + massa única – não usar composição de fachada)"],["S","87879"],["S","104951"],["S","104959"],["S","87275"],["S","87267"],["E",2,"FACHADA"],["S","87905"],["S","87775"],["S","87792"],["E",1,"PISOS, RODAPÉS, SOLEIRAS E PEITORIS"],["E",2,"BASE"],["S","95241"],["S","87680"],["S","87692"],["E",2,"REVESTIMENTOS"],["S","104596"],["S","104597"],["S","104598"],["S","87263"],["S","104658"],["S","106788"],["E",2,"ARREMATES"],["S","87261"],["S","98695"],["S","98689"],["S","101965"],["M","ORSE","S12446","PEITORIL EM GRANITO BRANCO SIENA, POLIDO, LARGURA 22 CM, E=2 CM","M",200.24],["E",1,"FORROS"],["S","96114"],["S","39429"],["S","96113"],["S","96110"],["S","96120"],["E",1,"PINTURA"],["E",2,"PREPARAÇÃO"],["S","88485"],["S","88484"],["S","88497"],["S","88496"],["S","100718"],["S","3777"],["E",2,"ACABAMENTO INTERNO"],["M","MANUAL","COT-EPOXI","PINTURA EPÓXI BRANCO NEVE EM PAREDES INTERNAS (FUNDO EPÓXI + 2 DEMÃOS) – ÁREAS RDC 50 - COTAÇÃO (SINAPI 100752 é para perfil metálico)","M2",62.0],["M","PRÓPRIA","COM-26890896","PINTURA LÁTEX ACRÍLICA PREMIUM ACETINADA COR PAPEL PICADO, APLICAÇÃO MANUAL EM PAREDES","M2",23.73],["S","88489"],["S","88488"],["E",2,"ACABAMENTO EXTERNO E PISOS"],["S","88415"],["S","95305"],["S","102491"],["S","102494"],["E",1,"PAISAGISMO"],["S","98533"],["S","98524"],["S","103946"],["S","98504"],["E",1,"PAVIMENTAÇÃO E ACESSIBILIDADE"],["S","104626"],["S","92402"],["S","105004"],["S","99855"],["E",1,"INSTALAÇÕES HIDRÁULICAS E SANITÁRIAS"],["E",2,"ÁGUA FRIA – ALIMENTAÇÃO E RESERVAÇÃO"],["S","104998"],["S","95648"],["S","104035"],["S","104043"],["S","103036"],["S","94795"],["S","102616"],["S","102610"],["S","94652"],["M","ORSE","S06093","CAIXA PARA PROTEÇÃO DE HIDRÔMETRO 0,50X1,00X0,70 M","UN",636.95],["E",2,"ÁGUA FRIA – TUBOS, CONEXÕES E REGISTROS"],["S","89355"],["S","89356"],["S","89357"],["S","89402"],["S","89403"],["S","89449"],["S","89450"],["S","89362"],["S","89366"],["S","90373"],["S","89617"],["S","89628"],["S","89505"],["S","89987"],["S","89985"],["S","94489"],["S","94493"],["S","94497"],["S","86884"],["E",2,"LOUÇAS, METAIS E ACESSÓRIOS"],["S","95471"],["S","86888"],["S","86931"],["S","100849"],["S","86943"],["S","93396"],["S","86893"],["S","93441"],["S","86872"],["S","99635"],["S","100871"],["S","100863"],["S","100860"],["S","1370"],["E",2,"ESGOTO SANITÁRIO"],["S","89711"],["S","89712"],["S","89713"],["S","89714"],["S","89798"],["S","89800"],["S","89731"],["S","89732"],["S","89744"],["S","89746"],["S","89752"],["S","89813"],["S","89821"],["S","104328"],["S","104326"],["S","97900"],["S","97902"],["S","98108"],["S","6149"],["S","86883"],["E",2,"ÁGUAS PLUVIAIS E DRENAGEM"],["S","99250"],["S","99251"],["S","102704"],["E",1,"INSTALAÇÕES ELÉTRICAS"],["E",2,"ENTRADA, QUADROS E PROTEÇÃO"],["S","101512"],["M","MERCADO","INS-614460","PADRÃO TRIFÁSICO T4, 7 M, 100 A, 35 MM² - COMPLETO","UN",2800.0],["S","101879"],["S","101882"],["S","101895"],["S","93653"],["S","93654"],["S","93655"],["S","93660"],["S","93661"],["S","93662"],["S","93663"],["S","93664"],["S","93675"],["S","106027"],["S","96986"],["S","98111"],["S","104750"],["S","96973"],["E",2,"CABOS E ELETRODUTOS"],["S","91924"],["S","91926"],["S","91927"],["S","91928"],["S","91929"],["S","91931"],["S","91933"],["S","91935"],["S","92984"],["S","92986"],["S","92988"],["S","91834"],["S","91835"],["S","91836"],["S","91837"],["S","91854"],["S","91870"],["S","91871"],["S","97670"],["S","97891"],["S","91939"],["E",2,"TOMADAS, INTERRUPTORES E LUMINÁRIAS"],["S","92000"],["S","91996"],["S","91993"],["S","92008"],["S","92001"],["S","91953"],["S","91955"],["S","38091"],["M","ORSE","S14010","LUMINÁRIA SOBREPOR QUADRADA, BRANCA, LED 36W, 3000K KAIS OU SIMILAR","UN",194.49],["S","103782"],["S","97605"],["S","97599"],["E",1,"CABEAMENTO ESTRUTURADO (LÓGICA)"],["S","98297"],["S","98307"],["S","98308"],["S","98302"],["S","101795"],["M","MANUAL","COT-RACK","RACK DE PAREDE 12U 19\" COM PORTA, BANDEJA E RÉGUA - COTAÇÃO","UN",1650.0],["E",1,"CLIMATIZAÇÃO"],["S","103247"],["S","103250"],["S","103253"],["S","103272"],["M","MANUAL","COT-LINHA","LINHA FRIGORÍGENA COBRE ISOLADA + CABO PP DE INTERLIGAÇÃO (POR BITOLA) - COTAÇÃO","M",98.0],["S","107239"],["S","89865"],["S","89866"],["S","90447"],["S","104766"],["E",1,"PREVENÇÃO E COMBATE A INCÊNDIO"],["S","101905"],["S","101906"],["S","101908"],["S","101911"],["S","37556"],["E",1,"SERVIÇOS COMPLEMENTARES"],["S","99802"],["S","99803"],["S","99819"],["S","10527"],["S","97064"],["E",1,"SERVIÇOS AUXILIARES"],["S","101460"],["M","PRÓPRIA","INS-39753503","VIGIA NOTURNO COM ENCARGOS COMPLEMENTARES","MES",4610.4],["E",1,"ADMINISTRAÇÃO LOCAL DA OBRA (usar no lugar do % de administração)"],["S","90778"],["S","93572"]];
+function novoOrcModelo(){
+  // BDI, desconto e regime NÃO vêm do modelo: variam por contrato/empresa – aplicar o perfil do contrato em "Dados e BDI"
+  const d = novoOrc(); d.nome = 'Novo orçamento (modelo SMS)'; d.adm = 0; d.crono.meses = 8; const b = Bases.data[d.bases.SINAPI]; const falt = [];
+  for (const x of MODELO_SMS){
+    if (x[0] === 'E') d.itens.push({ id:uid(), tipo:'etapa', nivel:x[1], titulo:x[2] });
+    else if (x[0] === 'S'){ const r = b && Bases.find(b, x[1]); if (!r){ falt.push(x[1]); continue; }
+      d.itens.push({ id:uid(), tipo:'item', fonte:'SINAPI', codigo:r.c, descricao:r.d, unidade:r.u, tref:r.t, qtd:0, qexpr:'', custo:null, manual:false, bdiDif:false }); }
+    else d.itens.push({ id:uid(), tipo:'item', fonte:x[1], codigo:x[2], descricao:x[3], unidade:x[4], tref:'C', qtd:0, qexpr:'', custo:x[5], manual:true, bdiDif:false });
+  }
+  if (falt.length) console.warn('Modelo SMS: códigos fora da base', falt);
+  return { d, falt };
 }
 const Orc = {
   doc:null, stamp:null, dirty:false, sel:new Set(), lastSel:null,
@@ -549,10 +578,12 @@ const UI = {
   /* ---------- Lista de orçamentos ---------- */
   async renderOrcs(el){
     el.innerHTML = `<div class="row" style="margin-bottom:14px"><div><h1>Orçamentos</h1><div class="mut">Planilhas orçamentárias com SINAPI, ORSE e composições próprias</div></div><div class="grow"></div>
-      <button class="btn" id="imp-orc">⇪ Importar planilha (.xlsx)</button><button class="btn pri" id="new-orc">+ Novo orçamento</button></div>
+      <button class="btn" id="imp-orc">⇪ Importar planilha (.xlsx)</button><button class="btn" id="new-mod" title="Cria o orçamento com as etapas e serviços padrão da SMS (quantidades zeradas). BDI e desconto: aplicar o perfil do contrato da empresa em Dados e BDI">+ Novo pelo modelo SMS</button><button class="btn pri" id="new-orc">+ Novo orçamento</button></div>
       <div class="card" style="padding:0" id="orc-list"><div class="empty">Carregando…</div></div>`;
     $('#new-orc').onclick = async () => { const d = novoOrc(); Orc.doc = d; Orc.calc(); Orc.stamp = null; await Orc.save(true); await Orc.open(d.id); this.sub = 'dados'; this.go('orc'); };
     $('#imp-orc').onclick = () => Importer.pickOrc();
+    $('#new-mod').onclick = async () => { const { d, falt } = novoOrcModelo(); Orc.doc = d; Orc.calc(); Orc.stamp = null; await Orc.save(true); await Orc.open(d.id); this.sub = 'dados'; this.go('orc');
+      toast(falt.length ? `Modelo criado – ${falt.length} código(s) fora da base: ${falt.join(', ')}` : 'Modelo SMS criado: escolha o perfil do contrato (BDI/desconto) e preencha as quantidades', 4500); };
     let list = [];
     try { list = await Store.listOrcs(); } catch(e){ $('#orc-list').innerHTML = `<div class="empty">Erro: ${esc(e.message)}</div>`; return; }
     const nRef = list.filter(o => o.resumo?.referencia).length;
@@ -641,7 +672,7 @@ function copiarComoPropria(b, rec){ const rows = analRows(b, rec.c, false); if (
   const n = Bases.props.reduce((m, p) => Math.max(m, parseInt(String(p.codigo).replace(/\D/g, '')) || 0), 0) + 1;
   Prop.cur = { id:uid(), codigo:'CP-' + String(n).padStart(4, '0'), descricao:rec.d, unidade:rec.u, grupo:rec.g || '', obs:`COMPOSIÇÃO UTILIZADA ${b.fonte} - ${rec.c}`, novo:true,
     itens:rows.map(x => ({ fonte:b.fonte, tipo:x.t, codigo:x.c, descricao:x.d, unidade:x.u, coef:x.coef })) };
-  Prop.ctx = { bases:{ [b.fonte]:b.id }, des:false }; UI.closeModal(); UI.closeDrawer(); UI.go('proprias'); toast('Ajuste os coeficientes e salve a nova composição'); }
+  Prop.ctx = { bases:{ [b.fonte]:b.id }, des:true }; UI.closeModal(); UI.closeDrawer(); UI.go('proprias'); toast('Ajuste os coeficientes e salve a nova composição'); }
 
 /* ---------- Dados e BDI ---------- */
 const Dados = {
@@ -670,6 +701,10 @@ const Dados = {
       <div class="row" style="margin-top:12px"><label class="chk"><input type="radio" name="des" value="0" ${!d.des ? 'checked' : ''}> Não desonerado</label><label class="chk"><input type="radio" name="des" value="1" ${d.des ? 'checked' : ''}> Desonerado</label></div>
       <h3>Administração da obra</h3><div class="grid g2"><div><label class="l">Taxa sobre o custo direto (%)</label><input class="f" data-d="adm" value="${d.adm}"></div><div class="small mut" style="align-self:end">Remuneração do engenheiro responsável. Entra no resumo como linha à parte, com BDI. Use 0 para não incluir.</div></div>
       </div>
+      <div><div class="card" style="margin-bottom:14px"><h2>Contrato / empresa</h2>
+        <div class="small mut" style="margin-bottom:8px">BDI, desconto e regime (desonerado ou não) mudam em cada contrato. Escolha o perfil da empresa contratada para aplicar, ou salve os valores atuais como um novo perfil.</div>
+        <div class="row"><select class="f" id="ctr-sel" style="flex:1"><option value="">Carregando perfis…</option></select><button class="btn sm pri" id="ctr-apl">Aplicar</button><button class="btn sm" id="ctr-sav">Salvar atual como perfil</button><button class="btn sm dan" id="ctr-del">Excluir</button></div>
+        <div class="small mut" id="ctr-info" style="margin-top:6px"></div></div>
       <div class="card"><h2>BDI (fórmula do Acórdão TCU 2.622/2013)</h2>
         <div class="small mut" style="margin-bottom:8px">BDI = [(1+AC+S+R+G)·(1+DF)·(1+L)] / (1−I) − 1</div>
         <div class="grid g3">${fld('ac', 'Administração central – AC (%)')}${fld('sg', 'Seguro e garantia – S+G (%)')}${fld('r', 'Risco – R (%)')}${fld('g', 'Garantia extra – G (%)')}${fld('df', 'Despesas financeiras – DF (%)')}${fld('l', 'Lucro – L (%)')}</div>
@@ -681,7 +716,22 @@ const Dados = {
         <div class="grid g3" id="dif-box" style="${b.dif.on ? '' : 'opacity:.4;pointer-events:none'}">${fld('ac', 'AC (%)', 'x')}${fld('sg', 'S+G (%)', 'x')}${fld('r', 'R (%)', 'x')}${fld('g', 'G (%)', 'x')}${fld('df', 'DF (%)', 'x')}${fld('l', 'L (%)', 'x')}</div>
         <div class="row" style="margin-top:10px"><span class="pill">BDI diferenciado = <b id="bdi-d">${fp(Orc.bdiD())}</b></span><span class="small mut">Marque nos itens da planilha quais usam o BDI diferenciado.</span></div>
         <div class="row" style="margin-top:12px"><button class="btn sm" id="bdi-reset">Restaurar valores padrão</button></div>
-      </div></div>`;
+      </div></div></div>`;
+    // perfis de contrato
+    const ctrInfo = p => p ? `${esc(p.empresa || '')}${p.numero ? ' · contrato ' + esc(p.numero) : ''} · BDI ${fp(bdiCalc(p.bdi, false, p.des))} · desconto ${nf2.format(+p.desconto || 0)}% · ${p.des ? 'desonerado' : 'não desonerado'}` : '';
+    Store.listCtr().then(ps => { this._ctrs = ps; const sel = $('#ctr-sel'); if (!sel) return;
+      sel.innerHTML = '<option value="">— selecione o contrato/empresa —</option>' + ps.map(p => `<option value="${p.id}" ${d.contratoPerfil === p.id ? 'selected' : ''}>${esc(p.nome)}</option>`).join('');
+      $('#ctr-info').innerHTML = ctrInfo(ps.find(p => p.id === sel.value)); sel.onchange = () => $('#ctr-info').innerHTML = ctrInfo(ps.find(p => p.id === sel.value)); }).catch(e => toast('Perfis: ' + e.message));
+    $('#ctr-apl').onclick = () => { const p = (this._ctrs || []).find(x => x.id === $('#ctr-sel').value); if (!p) return toast('Escolha um perfil');
+      d.bdi = JSON.parse(JSON.stringify(p.bdi)); d.desconto = +p.desconto || 0; d.des = !!p.des; d.contratoPerfil = p.id;
+      d.contrato = { ...(d.contrato || {}), empresa:p.empresa || d.contrato?.empresa || '', cnpj:p.cnpj || d.contrato?.cnpj || '', numero:p.numero || d.contrato?.numero || '' };
+      Orc.touch(); UI.render(); toast('Perfil aplicado: ' + p.nome); };
+    $('#ctr-sav').onclick = async () => { const nome = prompt('Nome do perfil (ex.: 3E Terraplanagem – Contrato 540/2022):', d.contrato?.empresa || ''); if (!nome) return;
+      const old = (this._ctrs || []).find(x => x.nome.toLowerCase() === nome.toLowerCase());
+      const p = { id:old?.id || uid(), nome, empresa:d.contrato?.empresa || nome, cnpj:d.contrato?.cnpj || '', numero:d.contrato?.numero || '', bdi:JSON.parse(JSON.stringify(d.bdi)), desconto:+d.desconto || 0, des:!!d.des };
+      try { await Store.saveCtr(p); d.contratoPerfil = p.id; Orc.touch(); toast('Perfil salvo'); this.render(s); } catch(e){ toast('Erro ao salvar: ' + e.message); } };
+    $('#ctr-del').onclick = async () => { const p = (this._ctrs || []).find(x => x.id === $('#ctr-sel').value); if (!p) return;
+      if (await UI.confirm(`Excluir o perfil "${p.nome}"? Os orçamentos já feitos não mudam.`, 'Excluir')){ await Store.delCtr(p.id); this.render(s); } };
     const upd = () => { $('#bdi-v').textContent = fp(Orc.bdiN()); $('#bdi-d').textContent = fp(Orc.bdiD()); Orc.touch(); };
     $$('[data-d]', s).forEach(i => i.onchange = () => { const k = i.dataset.d; d[k] = (k === 'adm' || k === 'desconto') ? (parseNum(i.value) || 0) : i.value; Orc.touch(); if (k === 'nome') UI.render(); });
     $$('[data-b]', s).forEach(i => i.oninput = () => { b[i.dataset.b] = parseNum(i.value) || 0; upd(); });
@@ -1329,7 +1379,7 @@ const Rel = {
 
 /* =================== COMPOSIÇÕES PRÓPRIAS =================== */
 const Prop = {
-  cur:null, ctx:{ bases:{ SINAPI:'SINAPI-MT-2026-09' }, des:false }, q:'',
+  cur:null, ctx:{ bases:{ SINAPI:'SINAPI-MT-2026-09' }, des:true }, q:'',
   async render(el){
     const ps = Bases.props; const f = norm(this.q);
     el.innerHTML = `<div class="row" style="margin-bottom:14px"><div><h1>Composições próprias</h1><div class="mut">Montadas com insumos e composições do SINAPI, ORSE ou outras próprias. O custo é recalculado pela base escolhida em cada orçamento.</div></div><div class="grow"></div><button class="btn pri" id="p-new">+ Nova composição</button></div>
