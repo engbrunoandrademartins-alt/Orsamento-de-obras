@@ -959,6 +959,7 @@ const Plan = {
         <button class="btn sm" id="t-edit">Editar</button><button class="btn sm dan" id="t-del">Excluir</button>
         <span class="sep"></span>
         <button class="btn sm" id="t-reprice" title="Itens importados de planilha passam a usar o preço da base selecionada">Usar preços da base</button>
+        <button class="btn sm" id="t-seobra" title="Gera o .xlsx no formato aceito pela importação do Seobra (Orçamentos › Importar Planilha)">⇪ Exportar p/ Seobra</button>
         <div class="grow"></div><input class="f" id="t-flt" placeholder="Filtrar na planilha…" style="width:220px" value="${esc(this.filter)}">
       </div>
       <div class="plan-wrap"><table class="t" id="plan"><thead><tr><th style="width:60px">Item</th><th style="width:90px">Código</th><th style="width:70px">Fonte</th><th>Descrição</th><th>Und</th><th class="n">Quant.</th><th class="n">Custo unit.</th><th class="n">BDI</th><th class="n">Preço unit.</th><th class="n">Total</th><th class="n">Peso</th></tr></thead><tbody></tbody></table></div>
@@ -1006,6 +1007,7 @@ const Plan = {
       if (await UI.confirm(`Excluir ${n} linha(s)?${hasEt ? ' Os itens dentro das etapas excluídas passam para a etapa anterior.' : ''}`, 'Excluir')){ Orc.delSel(); this.refresh(); } };
     $('#t-reprice').onclick = async () => { const n = Orc.doc.itens.filter(i => i.manual && i.importado).length; if (!n) return toast('Nenhum item importado com preço fixo');
       if (await UI.confirm(`${n} itens importados estão com o preço da planilha original. Trocar pelo preço da base selecionada onde o código for encontrado?`, 'Atualizar', false)){ await Orc.repricing(); this.refresh(); } };
+    $('#t-seobra').onclick = () => Seobra.exportar();
     $('#t-flt').oninput = debounce(e => { this.filter = $('#t-flt').value; this.body(); }, 200);
   },
   edit(id){
@@ -1198,7 +1200,9 @@ const Rel = {
       <div class="card"><h2>Relatórios no modelo da planilha PASSAREDO</h2><p class="mut small" style="margin-top:-4px">Escolha as partes e gere o Excel (com fórmulas, uma aba por relatório) ou o PDF (uma seção por página).</p>
         ${this.SEC.map(([k, t, a]) => `<label class="chk" style="padding:6px 0;border-bottom:1px solid #eef2ef"><input type="checkbox" data-k="${k}" ${this.sel[k] ? 'checked' : ''}> <b style="width:300px">${t}</b> <span class="small mut">aba ${a}</span></label>`).join('')}
         <div class="row" style="margin-top:10px"><label class="l" style="margin:0">Medição do boletim</label><select class="f" id="rl-med" style="width:280px">${ms.map((m, i) => `<option value="${m.id}" ${i === ms.length - 1 ? 'selected' : ''}>${i + 1}ª medição — ${brDate(m.ini)} a ${brDate(m.fim)}</option>`).join('') || '<option value="">(nenhuma medição lançada)</option>'}</select></div>
-        <div class="row" style="margin-top:14px"><button class="btn pri" id="rl-xls">⬇ Gerar Excel</button><button class="btn pri" id="rl-pdf">⎙ Gerar PDF</button><span class="small mut">No PDF, escolha “Salvar como PDF” na janela de impressão.</span></div></div>
+        <div class="row" style="margin-top:14px"><button class="btn pri" id="rl-xls">⬇ Gerar Excel</button><button class="btn pri" id="rl-pdf">⎙ Gerar PDF</button><span class="small mut">No PDF, escolha “Salvar como PDF” na janela de impressão.</span></div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)"><b>Seobra</b><div class="small mut" style="margin:2px 0 8px">Planilha para Orçamentos › Importar Planilha do Seobra. Lá, marque “Salvar itens não encontrados como composições próprias” e informe o BDI global.</div>
+        <button class="btn" id="rl-seobra">⇪ Exportar para o Seobra (.xlsx)</button></div></div>
       <div class="card"><h2>Confira antes de gerar</h2><div class="small" style="line-height:1.9">
         Obra: <b>${esc(Orc.doc.obra || '—')}</b><br>Endereço: <b>${esc(Orc.doc.endereco || '—')}</b><br>Município: <b>${esc(Orc.doc.municipio || '—')}</b><br>Assunto: <b>${esc(Orc.doc.assunto || '—')}</b><br>Ordem de serviço: <b>${esc(Orc.doc.os || '—')}</b><br>
         Referência: <b>${esc(this.refTxt())}</b><br>BDI: <b>${fp(Orc.bdiN())}</b> · Desconto: <b>${nf2.format(+Orc.doc.desconto || 0)}%</b><br>Responsável: <b>${esc(Orc.doc.responsavel || '—')}</b> ${esc(Orc.doc.crea || '')} ${Orc.doc.matricula ? '· Matrícula ' + esc(Orc.doc.matricula) : ''}</div>
@@ -1208,6 +1212,7 @@ const Rel = {
       if (ks.includes('bol') && !m){ toast('Lance uma medição para gerar o boletim'); return null; } if (!ks.length){ toast('Marque ao menos um relatório'); return null; } return { ks, m }; };
     $('#rl-xls').onclick = () => { const p = pick(); p && this.excel(p.ks, p.m).catch(e => toast('Erro no Excel: ' + e.message, 6000)); };
     $('#rl-pdf').onclick = () => { const p = pick(); p && this.pdf(p.ks, p.m); };
+    $('#rl-seobra').onclick = () => Seobra.exportar();
   },
   /* ---------- dados comuns ---------- */
   refTxt(){ const d = Orc.doc; if (d.refTexto && (d.referencia || d.itens.every(i => i.tipo === 'etapa' || i.manual))) return d.refTexto; const parts = Object.entries(d.bases || {}).filter(([, v]) => v).map(([f, id]) => { const m = Bases.meta(id); return `${f} ${refBR(m?.ref)}`; });
@@ -1720,6 +1725,54 @@ const BasesUI = {
 };
 
 /* =================== IMPORTAÇÃO =================== */
+/* =================== SEOBRA (exportação) ===================
+   Formato testado na importação do Seobra (nov/2026): ITEM | CODIGO | FONTE | DESCRICAO | UNIDADE | QUANTIDADE | PRECO UNITARIO (sem BDI) | PRECO TOTAL.
+   Etapas = linha só com o número e o título. Itens com quantidade zero ficam de fora (o Seobra não aceita). */
+const Seobra = {
+  fonte(it){ const f = it.fonte || ''; if (f === 'PRÓPRIA') return 'PRÓPRIO'; return f || 'MANUAL'; },
+  linhas(){
+    Orc.calc(); const d = Orc.doc; const out = [['ITEM', 'CODIGO', 'FONTE', 'DESCRICAO', 'UNIDADE', 'QUANTIDADE', 'PRECO UNITARIO', 'PRECO TOTAL']];
+    let zeros = 0, semCod = 0, manuais = 0, pend = [];
+    for (const it of d.itens){
+      if (it.tipo === 'etapa'){ pend.push([it.num, '', '', it.titulo, '', '', '', '']); continue; }
+      if (!(+it.qtd > 0)){ zeros++; continue; }
+      if (pend.length){ out.push(...pend); pend = []; } // etapa vazia não vai
+      const f = this.fonte(it); let cod = String(it.codigo || '').trim();
+      if (!cod){ cod = 'MAN-' + it.num; semCod++; }
+      if (f === 'MANUAL' || it.manual) manuais++;
+      out.push([it.num, cod, f, String(it.descricao || '').toUpperCase(), String(it.unidade || '').toUpperCase(), +it.qtd, it._custo, r2(+it.qtd * it._custo)]);
+    }
+    return { out, zeros, semCod, manuais };
+  },
+  exportar(){
+    if (!window.XLSX) return toast('Biblioteca do Excel não carregou');
+    const d = Orc.doc, { out, zeros, semCod, manuais } = this.linhas(), r = d.resumo;
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(out);
+    ws['!cols'] = [{ wch:8 }, { wch:12 }, { wch:10 }, { wch:90 }, { wch:8 }, { wch:12 }, { wch:14 }, { wch:14 }];
+    for (let i = 1; i < out.length; i++){ for (const c of [6, 7]){ const a = XLSX.utils.encode_cell({ r:i, c }); if (ws[a] && typeof ws[a].v === 'number') ws[a].z = '#,##0.00'; } }
+    XLSX.utils.book_append_sheet(wb, ws, 'ORCAMENTO');
+    const info = [
+      ['DADOS PARA CONFERÊNCIA NO SEOBRA (esta aba não é importada)'], [],
+      ['Obra', d.obra || d.nome], ['Referência', Orc.refLabel()], ['BDI global (%)', r2(Orc.bdiN() * 100)],
+      ['Custo direto (sem BDI)', r.totalSem], ['Total com BDI', r.total],
+      ['Administração da obra (%)', +d.adm || 0], ['Administração da obra (R$, já com BDI)', r.adm],
+      ['Desconto (%)', +d.desconto || 0], ['Desconto (R$)', r.desconto], ['Valor total final', r.final], [],
+      ['COMO IMPORTAR'],
+      ['1', 'Seobra › Orçamentos › Importar Planilha › escolher este arquivo (aba ORCAMENTO).'],
+      ['2', 'Informar o BDI global acima e marcar "Salvar itens não encontrados como composições próprias".'],
+      ['3', 'Conferir o Resumo/Total por Fontes: o valor total deve bater com o "Custo direto (sem BDI)".'],
+      ['4', 'Lançar a administração da obra e o desconto em Acréscimos/Descontos (não entram pela importação).'],
+      [], ['Itens com quantidade zero não exportados', zeros], ['Itens sem código (receberam MAN-<item>)', semCod], ['Itens com preço fixo/cotação (entram como composição própria)', manuais],
+    ];
+    const wi = XLSX.utils.aoa_to_sheet(info); wi['!cols'] = [{ wch:48 }, { wch:90 }];
+    XLSX.utils.book_append_sheet(wb, wi, 'LEIA-ME');
+    const nome = ('SEOBRA_' + (d.nome || 'orcamento')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 80) + '.xlsx';
+    XLSX.writeFile(wb, nome);
+    toast(`Exportado para o Seobra: ${out.length - 1} linhas${zeros ? ` · ${zeros} itens com quantidade zero ficaram de fora` : ''}`, 5000);
+  },
+};
+
 const Importer = {
   pick(accept, cb){ const fi = $('#file-in'); fi.value = ''; fi.accept = accept; fi.onchange = () => fi.files[0] && cb(fi.files[0]); fi.click(); },
   async readBook(file){ if (!window.XLSX) throw new Error('Biblioteca do Excel não carregou'); const buf = await file.arrayBuffer(); return XLSX.read(buf, { type:'array' }); },
@@ -1735,6 +1788,9 @@ const Importer = {
     const H = rows[hi].map(c => norm(c).replace(/\s+/g, ' ').trim());
     const col = re => H.findIndex(h => re.test(h));
     const C = { item:col(/^I?TEM$/), cod:col(/CODIGO/), desc:col(/DESCRI/), fonte:col(/FONTE|BANCO/), und:col(/^UN/), qtd:col(/QUANT/), psb:col(/S\/ ?BDI|SEM BDI/), pu:col(/UNITARIO|UNIT/), tot:col(/TOTAL/) };
+    if (C.psb < 0){ const uc = H.map((h, i) => /UNIT/.test(h) ? i : -1).filter(i => i >= 0);
+      const sem = uc.find(i => !/BDI/.test(H[i])), com = uc.find(i => /C\/ ?BDI|COM BDI/.test(H[i]));
+      if (sem != null && com != null) C.psb = sem; } // ex.: Seobra "Valor Unit" + "Valor Unit com BDI"
     if (C.psb >= 0) C.pu = C.psb;
     let bdiTot = null, orcTot = null, bdiCel = null, descPct = 0;
     const desFile = rows.slice(0, hi + 1).some(r => r.some(c => /COM DESONERA/.test(norm(c))));
