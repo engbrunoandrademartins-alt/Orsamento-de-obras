@@ -75,6 +75,15 @@
   async function contratos(){ cli(); return chk(await cq.from('vw_emp_contrato_resumo').select('*').order('numero_contrato')); }
   async function orcs(){ cli(); return chk(await cq.from('vw_orc_resumo').select('*').eq('referencia', false).order('nome')); }
   async function vincs(){ cli(); return chk(await cq.from('obra_vinculos').select('*')); }
+  async function projetosObra(obraId){ cli(); return chk(await rl.from('projetos').select('id,nome,categoria,storage_path,file_name,file_size,cad_path,cad_name,cad_size,orcamento_id,data_upload').eq('obra_id', obraId).order('nome')); }
+  async function orcsDaObra(obraId){ const [vs, os] = await Promise.all([vincs(), orcs()]); const v = vs.find(x => x.obra_id === obraId); const ids = v ? (v.orcamento_ids || []) : []; return os.filter(o => ids.includes(o.id)); }
+  const arqUrl = p => p ? 'https://vvcyfdgadvacfiqlltly.supabase.co/storage/v1/object/public/arquivos-obras/' + p.split('/').map(encodeURIComponent).join('/') : '';
+  function listaProjetos(ps, orcId){
+    if (!ps.length) return '<div class="mut">Nenhum projeto anexado a esta obra.</div>';
+    const ord = ps.slice().sort((a, b) => ((b.orcamento_id === orcId) - (a.orcamento_id === orcId)));
+    return `<ul class="ctosm-list">${ord.map(p => `<li><span>${e(p.nome || p.file_name || p.cad_name)} <span class="ctosm-tag">${e(p.categoria || 'Projeto')}</span>${orcId && p.orcamento_id === orcId ? ' <span class="ctosm-tag" style="background:#fff4d6;color:#8a5a00">deste orçamento</span>' : ''}</span>
+      <span style="white-space:nowrap">${p.storage_path ? `<a href="${arqUrl(p.storage_path)}" target="_blank" rel="noopener">PDF ↗</a>` : ''}${p.storage_path && p.cad_path ? ' · ' : ''}${p.cad_path ? `<a href="${arqUrl(p.cad_path)}" target="_blank" rel="noopener">DWG ↓</a>` : ''}</span></li>`).join('')}</ul>`;
+  }
   async function salvar(v){ cli(); v.atualizado_em = new Date().toISOString(); chk(await cq.from('obra_vinculos').upsert(v)); }
   // um orçamento pertence a uma obra só: retira dos outros vínculos
   async function soltarOrc(orcId, exceto){ const all = await vincs();
@@ -138,7 +147,9 @@
         <div class="ctosm-row"><select id="ctosm-ctr"><option value="">— contrato (Controle de Empenhos) —</option>${cs.map(x => `<option value="${x.id}" ${c && c.id === x.id ? 'selected' : ''}>${e(x.numero_contrato)} — ${e(x.credor)}</option>`).join('')}</select>
           ${c ? `<a class="ctosm-btn sec" href="${LINKS.emp}?contrato=${c.id}" target="_blank" rel="noopener">abrir empenhos ↗</a>` : ''}</div>
         ${c ? kpisContrato(c) : ''}
+        ${v ? `<details open><summary style="cursor:pointer;margin:6px 0">Projetos da obra (PDF e DWG)</summary><div id="ctosm-projs" class="mut">Carregando projetos…</div></details>` : ''}
         <div class="ctosm-row"><button class="ctosm-btn" id="ctosm-salvar">Salvar vínculos</button><span class="mut" id="ctosm-msg">O contrato fica gravado na obra: vale para todos os orçamentos dela.</span></div></div>`;
+      if (v) projetosObra(v.obra_id).then(ps => { const d = el.querySelector('#ctosm-projs'); if (d) d.outerHTML = listaProjetos(ps, orcId); }).catch(err => { const d = el.querySelector('#ctosm-projs'); if (d) d.textContent = 'Não foi possível carregar os projetos: ' + (err.message || err); });
       el.querySelector('#ctosm-salvar').onclick = async () => {
         const oid = el.querySelector('#ctosm-obra').value, cid = el.querySelector('#ctosm-ctr').value || null;
         try {
@@ -168,7 +179,7 @@
   }
 
   const param = k => new URLSearchParams(location.search).get(k);
-  window.CTOSM = { LINKS, bar, painelObra, painelOrc, painelContrato, param };
+  window.CTOSM = { LINKS, bar, painelObra, painelOrc, painelContrato, param, orcsDaObra, projetosObra };
 })();
 
 </script>
