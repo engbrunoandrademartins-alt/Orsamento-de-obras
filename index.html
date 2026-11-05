@@ -185,6 +185,7 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script>try{const t=localStorage.getItem("oc-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
   --g9:#0f3d2a;--g8:#14532d;--g7:#166534;--g6:#15803d;--g5:#16a34a;--g1:#dcfce7;--g0:#f0fdf4;
@@ -278,6 +279,137 @@ td.code{font-family:var(--mono);font-size:11.5px;white-space:nowrap}
 .lst-item:last-child{border-bottom:0}
 .lst-item:hover{background:#fafcfa}
 .chk{display:flex;align-items:center;gap:6px;cursor:pointer}
+/* ===================== LAYOUT PROFISSIONAL (v2) ===================== */
+:root{
+  --side:220px;--sb:30px;
+  --g9:#0e3324;--g8:#14532d;--g7:#166534;--g6:#15803d;--g5:#16a34a;--g1:#dcfce7;--g0:#f0fdf4;
+  --ink:#16201b;--mut:#5f6d66;--line:#dde4df;--line2:#edf1ee;--bg:#f3f5f4;--card:#fff;--hd:#eef2ef;--hover:#f7faf8;
+  --sel:#fff5c2;--selline:#eab308;--focus:#22c55e;
+  --etapa1:#e4efe7;--etapa2:#eef5f0;--etapa3:#f6faf7;
+  --side-bg:#0e2a1d;--side-ink:#b9d3c4;--side-on:#ffffff;--side-hi:rgba(255,255,255,.08);
+  --shadow:0 1px 2px rgba(16,24,20,.05),0 1px 1px rgba(16,24,20,.03);
+}
+html[data-theme=dark]{
+  --ink:#e3ebe6;--mut:#93a49b;--line:#2a3530;--line2:#232d29;--bg:#111714;--card:#171f1b;--hd:#1d2722;--hover:#1b2520;
+  --sel:#3a3413;--selline:#ca8a04;--g0:#132119;--g1:#183a27;
+  --etapa1:#1c2e24;--etapa2:#19281f;--etapa3:#17221c;
+  --side-bg:#0b1310;--side-ink:#97ae9f;--side-hi:rgba(255,255,255,.06);
+  --shadow:none;color-scheme:dark;
+}
+body{display:grid;grid-template-columns:var(--side) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);min-height:100vh;background:var(--bg);font-size:13px;letter-spacing:-.003em}
+body > .ctosm-bar{grid-column:1/-1}
+/* sidebar */
+header.top{grid-column:1;grid-row:2;position:sticky;top:0;height:100vh;flex-direction:column;align-items:stretch;gap:0;padding:14px 10px calc(var(--sb) + 10px);background:var(--side-bg);border-right:1px solid rgba(255,255,255,.04)}
+.brand{padding:4px 8px 16px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:12px}
+.brand .logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#22c55e,#15803d);font-size:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.brand small{font-size:10.5px;opacity:.6;margin-top:2px}
+nav.main{flex-direction:column;margin:0;gap:2px}
+.side-lbl{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--side-ink);opacity:.55;padding:10px 10px 6px;font-weight:600}
+nav.main button,.side-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:var(--side-ink);padding:8px 10px;border-radius:7px;cursor:pointer;font-weight:500;font-size:13px}
+nav.main button svg,.side-btn svg{width:16px;height:16px;flex:none;opacity:.85}
+nav.main button:hover,.side-btn:hover{background:var(--side-hi);color:#fff}
+nav.main button.on{background:rgba(34,197,94,.14);color:var(--side-on);box-shadow:inset 2px 0 0 #22c55e}
+nav.main button kbd,.side-btn kbd{margin-left:auto}
+.side-sp{flex:1}
+.conn{margin:8px 0 0;padding:8px 10px;border-top:1px solid rgba(255,255,255,.07);color:var(--side-ink);font-size:11.5px}
+kbd{font:500 10.5px/1 var(--mono);padding:2px 5px;border-radius:4px;border:1px solid var(--line);border-bottom-width:2px;background:var(--card);color:var(--mut);white-space:nowrap}
+header.top kbd{background:transparent;border-color:rgba(255,255,255,.18);color:var(--side-ink)}
+main{grid-column:2;grid-row:2;padding:20px 24px calc(var(--sb) + 20px);max-width:none;width:100%;margin:0;min-width:0}
+/* superfícies */
+.card,.kpi,.plan-wrap,.modal,.drawer,.btn,input.f,select.f,textarea.f{background:var(--card);border-color:var(--line)}
+.card{border-radius:8px;box-shadow:var(--shadow)}
+h1{font-size:19px;font-weight:650;letter-spacing:-.01em}h2{font-size:15px;font-weight:650}
+.btn{border-radius:6px;padding:6px 11px;color:var(--ink);box-shadow:var(--shadow)}
+.btn:hover{background:var(--hover);border-color:#b8c7bd}
+.btn.pri{background:var(--g7);border-color:var(--g7);color:#fff}.btn.pri:hover{background:var(--g8)}
+.btn kbd{margin-left:4px;padding:1px 4px;font-size:9.5px}
+.btn.pri kbd{background:transparent;color:#d1fae5;border-color:rgba(255,255,255,.35)}
+input.f:focus,select.f:focus,textarea.f:focus{outline:2px solid color-mix(in srgb,var(--focus) 45%,transparent);border-color:var(--g5)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.subnav{border-color:var(--line)}
+.subnav button{padding:8px 14px;font-size:12.5px}
+.subnav button .k{font:500 9.5px var(--mono);opacity:.55;margin-left:6px}
+.kpis{gap:10px}
+.kpi{border-radius:8px;padding:10px 14px;box-shadow:var(--shadow);border-left:3px solid var(--line)}
+.kpi:last-child{border-left-color:var(--g5)}
+.kpi b{font:600 16px var(--mono);letter-spacing:-.02em;margin-top:2px}
+.kpi span{font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+/* tabela da planilha */
+table.t th{background:var(--hd);color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;border-color:var(--line);padding:7px 8px}
+table.t td{border-color:var(--line2)}
+table.t tr:hover td{background:var(--hover)}
+td.n{font-family:var(--mono);font-size:12px;letter-spacing:-.02em}
+.plan-wrap{border-radius:8px;max-height:calc(100vh - 300px);box-shadow:var(--shadow)}
+#plan td{padding:4px 8px;border-color:var(--line2)}
+#plan td:first-child{font:500 11.5px var(--mono);color:var(--mut);white-space:nowrap}
+#plan tr.et1 td{background:var(--etapa1);font-weight:700;border-top:1px solid var(--line)}
+#plan tr.et1 td:first-child{color:var(--g7)}
+#plan tr.et2 td{background:var(--etapa2)}#plan tr.et2 td:nth-child(2){padding-left:22px}
+#plan tr.et3 td{background:var(--etapa3)}#plan tr.et3 td:nth-child(2){padding-left:36px}
+#plan tr.sel td{background:var(--sel)!important}
+#plan tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--selline)}
+#plan tr.cur td{box-shadow:inset 0 1px 0 var(--selline),inset 0 -1px 0 var(--selline)}
+#plan tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--selline),inset 0 1px 0 var(--selline),inset 0 -1px 0 var(--selline)}
+#plan input.q{font:12px var(--mono);color:var(--ink)}
+#plan input.q:focus{background:var(--card);box-shadow:0 0 0 2px color-mix(in srgb,var(--focus) 40%,transparent)}
+#plan .desc{font-size:12.5px}
+.toolbar{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 8px;box-shadow:var(--shadow)}
+.toolbar .btn{box-shadow:none}
+.sep{background:var(--line)}
+/* barra de status */
+#statusbar{position:fixed;left:var(--side);right:0;bottom:0;height:var(--sb);display:flex;align-items:center;gap:0;background:var(--card);border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);z-index:40;overflow:hidden;white-space:nowrap}
+#statusbar > span{padding:0 12px;border-right:1px solid var(--line2);height:100%;display:flex;align-items:center;gap:6px}
+#statusbar b{color:var(--ink);font:500 11.5px var(--mono)}
+#statusbar .grow{flex:1;border:0}
+#statusbar .ok{color:var(--g6)}#statusbar .bad{color:var(--warn)}
+/* paleta de comandos */
+#pal-bg{position:fixed;inset:0;background:rgba(10,20,15,.42);backdrop-filter:blur(2px);z-index:95;display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+#pal-bg.open{display:flex}
+#pal{width:min(640px,94vw);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden}
+#pal input{width:100%;border:0;border-bottom:1px solid var(--line);padding:15px 18px;font-size:15px;background:transparent;outline:none;color:var(--ink)}
+#pal-list{max-height:52vh;overflow:auto;padding:6px}
+.pal-g{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);padding:8px 10px 4px;font-weight:600}
+.pal-i{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer}
+.pal-i .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pal-i .s{color:var(--mut);font-size:11.5px}
+.pal-i.on{background:var(--g0);box-shadow:inset 2px 0 0 var(--g5)}
+.pal-ft{display:flex;gap:14px;padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:var(--hd)}
+/* drawer de busca */
+.res.on{background:var(--g0);box-shadow:inset 3px 0 0 var(--g5)}
+.res:hover{background:var(--hover)}
+.drawer .hd{background:var(--card)}
+/* atalhos */
+.keys{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 28px}
+.keys div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--line2)}
+.keys h3{grid-column:1/-1;margin:12px 0 2px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut)}
+/* escuro: cores fixas antigas */
+html[data-theme=dark] .lst-item:hover{background:var(--hover)}
+html[data-theme=dark] .subnav button.on{color:#4ade80;border-color:#4ade80}
+html[data-theme=dark] .kpi b[style*="--g7"],html[data-theme=dark] #plan tr.et1 td:first-child{color:#4ade80!important}
+html[data-theme=dark] .btn.dan{color:#f87171}
+html[data-theme=dark] .pill{background:#183a27;color:#86efac}
+html[data-theme=dark] .note{background:#2a2410;border-color:#4d3f12;color:#f5d98a}
+html[data-theme=dark] .tag{filter:saturate(.9) brightness(.92)}
+html[data-theme=dark] .modal-bg{background:rgba(0,0,0,.6)}
+html[data-theme=dark] #toast{background:#e3ebe6;color:#111}
+html[data-theme=dark] table.t td[style*="background"],html[data-theme=dark] tr[style*="background"]{background:var(--hd)!important}
+html[data-theme=dark] .abcA{background:#3a1d1d!important}html[data-theme=dark] .abcB{background:#3a3115!important}html[data-theme=dark] .abcC{background:#16301f!important}
+html[data-theme=dark] .bar{background:#26322c}
+html[data-theme=dark] .crono input{background:var(--card);border-color:var(--line)}
+/* telas menores: barra lateral vira barra superior */
+@media (max-width:900px){
+  body{grid-template-columns:1fr}
+  header.top{grid-column:1;grid-row:2;height:auto;position:sticky;top:0;z-index:30;flex-direction:row;flex-wrap:wrap;align-items:center;padding:8px 10px;gap:6px}
+  .brand{border:0;margin:0;padding:0 6px 0 0}.brand small{display:none}
+  nav.main{flex-direction:row;flex-wrap:wrap}.side-lbl,.side-sp,header.top .side-extra{display:none}
+  nav.main button kbd{display:none}
+  .conn{border:0;margin:0 0 0 auto;padding:0}
+  main{grid-column:1;grid-row:3;padding:14px 12px calc(var(--sb) + 14px)}
+  #statusbar{left:0}#statusbar .hide-sm{display:none}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media print{ body{display:block} #statusbar,#pal-bg{display:none!important} }
+
 /* print */
 #print-area{display:none}
 @page{size:A4 landscape;margin:9mm 8mm}
@@ -325,11 +457,19 @@ td.code{font-family:var(--mono);font-size:11.5px;white-space:nowrap}
 <body>
 <header class="top">
   <div class="brand"><div class="logo">▦</div><div>ObraCerta<small>Orçamento de obras · CTOSM / SMS Cuiabá</small></div></div>
+  <div class="side-lbl">Módulos</div>
   <nav class="main" id="nav">
-    <button data-v="orcs" class="on">Orçamentos</button>
-    <button data-v="proprias">Composições próprias</button>
-    <button data-v="bases">Bancos de preços</button>
+    <button data-v="orcs" class="on" title="Alt+1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg>Orçamentos<kbd>Alt 1</kbd></button>
+    <button data-v="proprias" title="Alt+2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Composições<kbd>Alt 2</kbd></button>
+    <button data-v="bases" title="Alt+3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>Bancos de preços<kbd>Alt 3</kbd></button>
   </nav>
+  <div class="side-lbl side-extra">Ferramentas</div>
+  <div class="side-extra">
+    <button class="side-btn" id="sb-pal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Comandos<kbd>Ctrl K</kbd></button>
+    <button class="side-btn" id="sb-keys"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>Atalhos<kbd>?</kbd></button>
+    <button class="side-btn" id="sb-theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><span id="sb-theme-t">Tema escuro</span></button>
+  </div>
+  <div class="side-sp"></div>
   <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Conectando…</span></div>
 </header>
 <main id="view"></main>
@@ -346,6 +486,9 @@ td.code{font-family:var(--mono);font-size:11.5px;white-space:nowrap}
 </div>
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
 <div id="toast"></div>
+<footer id="statusbar"></footer>
+<div id="pal-bg"><div id="pal"><input id="pal-q" placeholder="Digite um comando, um orçamento ou um item da planilha…" autocomplete="off"><div id="pal-list"></div>
+  <div class="pal-ft"><span><kbd>↑</kbd> <kbd>↓</kbd> navegar</span><span><kbd>Enter</kbd> executar</span><span><kbd>Esc</kbd> fechar</span></div></div></div>
 <div id="print-area"></div>
 <input type="file" id="file-in" hidden>
 
@@ -1934,6 +2077,240 @@ const Importer = {
     }
   },
 };
+
+/* =================== INTERFACE v2: TEMA, STATUS, HISTÓRICO, TECLADO, PALETA =================== */
+const Theme = {
+  get(){ return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'; },
+  set(t){ document.documentElement.dataset.theme = t; try { localStorage.setItem('oc-theme', t); } catch(e){} const l = $('#sb-theme-t'); if (l) l.textContent = t === 'dark' ? 'Tema claro' : 'Tema escuro'; },
+  toggle(){ this.set(this.get() === 'dark' ? 'light' : 'dark'); },
+};
+
+const Status = {
+  save:'',
+  update(){
+    const el = $('#statusbar'); if (!el) return;
+    const right = `<span class="hide-sm"><kbd>Ctrl K</kbd> comandos</span><span class="hide-sm"><kbd>?</kbd> atalhos</span>`;
+    if (UI.view !== 'orc' || !Orc.doc || !Orc.doc.resumo){
+      const nome = { orcs:'Orçamentos', proprias:'Composições próprias', bases:'Bancos de preços' }[UI.view] || '';
+      el.innerHTML = `<span><b style="font-family:inherit">ObraCerta</b></span><span>${esc(nome)}</span><span class="grow"></span>${right}`; return; }
+    const r = Orc.doc.resumo, its = Orc.doc.itens;
+    const sel = [...Orc.sel].map(id => its[Orc.idx(id)]).filter(Boolean);
+    const sItens = sel.filter(i => i.tipo !== 'etapa'), sEt = sel.filter(i => i.tipo === 'etapa');
+    const soma = r2(sItens.reduce((a, i) => a + (i._tot || 0), 0) + sEt.reduce((a, e) => a + (e._tot || 0), 0));
+    const sv = this.save || 'Salvo', cls = /Erro/.test(sv) ? 'bad' : (/não salvas/.test(sv) ? '' : 'ok');
+    el.innerHTML = `<span class="hide-sm">${esc(Orc.refLabel())}</span><span>BDI <b>${fp(Orc.bdiN())}</b></span>
+      <span class="hide-sm">Custo direto <b>${fm(r.totalSem)}</b></span><span>Total c/ BDI <b>${fm(r.total)}</b></span><span>Valor final <b>${fm(r.final)}</b></span>
+      <span>${sel.length ? `Seleção <b>${sel.length}</b> · <b>${fm(soma)}</b>` : `<span class="mut">${r.itens} itens</span>`}</span>
+      <span class="grow"></span><span class="${cls}">● ${esc(sv)}</span>${Hist.u.length ? `<span class="hide-sm">Desfazer <kbd>Ctrl Z</kbd></span>` : ''}${right}`;
+  },
+};
+
+/* desfazer / refazer: fotografias do orçamento a cada alteração (agrupa alterações em sequência rápida) */
+const Hist = {
+  u:[], r:[], last:null, t:0, MAX:80,
+  snap(){ return JSON.stringify(Orc.doc, (k, v) => k.startsWith('_') ? undefined : v); },
+  reset(){ this.u = []; this.r = []; this.last = Orc.doc ? this.snap() : null; this.t = 0; },
+  push(){ if (!Orc.doc || this.busy) return; const now = this.snap(); if (now === this.last) return; const t = Date.now();
+    if (!(t - this.t < 700 && this.u.length) && this.last) this.u.push(this.last);
+    if (this.u.length > this.MAX) this.u.shift(); this.t = t; this.r = []; this.last = now; },
+  apply(s){ this.busy = true; const keep = { id:Orc.doc.id }; const pos = Math.max(0, Orc.idx(Orc.lastSel));
+    Orc.doc = { ...JSON.parse(s), ...keep }; Orc.sel = new Set([...Orc.sel].filter(id => Orc.doc.itens.some(i => i.id === id)));
+    if (Orc.idx(Orc.lastSel) < 0){ const it = Orc.doc.itens[Math.min(pos, Orc.doc.itens.length - 1)]; Orc.lastSel = it?.id || null; if (it && !Orc.sel.size) Orc.sel = new Set([it.id]); }
+    Orc.dirty = true; Orc.calc(); Orc.autosave(); UI.setSaveState('Alterações não salvas…'); this.last = s; this.t = 0; this.busy = false;
+    if (UI.view === 'orc'){ const w = $('.plan-wrap'), sc = w?.scrollTop; UI.renderOrc($('#view')); if (w && $('.plan-wrap')) $('.plan-wrap').scrollTop = sc; } },
+  undo(){ if (!this.u.length) return toast('Nada para desfazer'); this.r.push(this.snap()); this.apply(this.u.pop()); toast('Desfeito'); },
+  redo(){ if (!this.r.length) return toast('Nada para refazer'); this.u.push(this.snap()); this.apply(this.r.pop()); toast('Refeito'); },
+};
+(() => { // ganchos nos objetos existentes
+  const t = Orc.touch; Orc.touch = function(){ t.call(this); Hist.push(); Status.update(); };
+  const o = Orc.open; Orc.open = async function(id){ await o.call(this, id); Hist.reset(); };
+  const ss = UI.setSaveState; UI.setSaveState = function(x){ ss.call(this, x); Status.save = x; Status.update(); };
+  const r = UI.render; UI.render = function(){ const v = r.call(this); Status.update(); return v; };
+  const ro = UI.renderOrc; UI.renderOrc = function(el){ ro.call(this, el); Kb.decorate(); Status.update(); };
+})();
+
+const Kb = {
+  typing(e){ const t = e.target; return t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)); },
+  overlay(){ return $('#modal-bg').classList.contains('open') || $('#pal-bg').classList.contains('open'); },
+  inPlan(){ return UI.view === 'orc' && UI.sub === 'plan' && $('#plan'); },
+  rows(){ return $$('#plan tbody tr[data-id]'); },
+  cur(){ return Orc.lastSel && Orc.idx(Orc.lastSel) >= 0 ? Orc.lastSel : null; },
+  paint(){ const tb = $('#plan tbody'); if (!tb) return; const c = this.cur();
+    $$('tr[data-id]', tb).forEach(r => { r.classList.toggle('sel', Orc.sel.has(r.dataset.id)); r.classList.toggle('cur', r.dataset.id === c); }); Status.update(); },
+  select(id, extend=false){ if (!id) return;
+    if (extend && this.anchor){ const rows = this.rows().map(r => r.dataset.id); const a = rows.indexOf(this.anchor), b = rows.indexOf(id);
+      Orc.sel = new Set(rows.slice(Math.min(a, b), Math.max(a, b) + 1)); }
+    else { Orc.sel = new Set([id]); this.anchor = id; }
+    Orc.lastSel = id; this.paint(); this.reveal(id); },
+  reveal(id){ const tr = $(`#plan tr[data-id="${id}"]`), w = $('.plan-wrap'); if (!tr || !w) return;
+    const r = tr.getBoundingClientRect(), wr = w.getBoundingClientRect(), hd = ($('#plan thead')?.offsetHeight || 30);
+    if (r.top < wr.top + hd) w.scrollTop -= (wr.top + hd - r.top); else if (r.bottom > wr.bottom) w.scrollTop += (r.bottom - wr.bottom); },
+  fit(){ const w = $('.plan-wrap'); if (!w || window.innerWidth <= 900) return; const top = w.getBoundingClientRect().top + window.scrollY;
+    w.style.maxHeight = Math.max(260, window.innerHeight - top - 30 - 14) + 'px'; },
+  step(d, extend){ const rows = this.rows(); if (!rows.length) return; const ids = rows.map(r => r.dataset.id);
+    let i = ids.indexOf(this.cur()); i = i < 0 ? (d > 0 ? 0 : ids.length - 1) : Math.max(0, Math.min(ids.length - 1, i + d)); this.select(ids[i], extend); },
+  focusQty(id){ const inp = $(`#plan input.q[data-q="${id}"]`); if (inp){ inp.focus(); inp.select(); } },
+  refresh(){ Plan.refresh(); this.paint(); },
+  dup(){ if (!Orc.sel.size) return toast('Selecione linhas'); const its = Orc.doc.itens; const idxs = [...Orc.sel].map(id => Orc.idx(id)).sort((a, b) => a - b);
+    const clones = idxs.map(i => { const c = JSON.parse(JSON.stringify(its[i], (k, v) => k.startsWith('_') ? undefined : v)); c.id = uid(); return c; });
+    its.splice(idxs[idxs.length - 1] + 1, 0, ...clones); Orc.sel = new Set(clones.map(c => c.id)); Orc.lastSel = clones[0].id; Orc.touch(); this.refresh(); toast(`${clones.length} linha(s) duplicada(s)`); },
+  copy(e){ const its = Orc.doc.itens.filter(i => Orc.sel.has(i.id)); if (!its.length) return false;
+    const tsv = [['ITEM', 'CODIGO', 'FONTE', 'DESCRICAO', 'UND', 'QUANT', 'CUSTO UNIT', 'PRECO UNIT', 'TOTAL'].join('\t')].concat(its.map(i => i.tipo === 'etapa' ? [i.num, '', '', i.titulo, '', '', '', '', String(i._tot).replace('.', ',')].join('\t')
+      : [i.num, i.codigo, i.fonteLabel || i.fonte, i.descricao, i.unidade, String(i.qtd).replace('.', ','), String(i._custo).replace('.', ','), String(i._pu).replace('.', ','), String(i._tot).replace('.', ',')].join('\t'))).join('\n');
+    e.clipboardData.setData('text/plain', tsv); e.preventDefault(); toast(`${its.length} linha(s) copiada(s) — cole no Excel`); return true; },
+  paste(txt){ // linhas "código [tab] ... quantidade" vindas do Excel
+    const lines = txt.split(/\r?\n/).map(l => l.split('\t').map(c => c.trim())).filter(c => c.some(Boolean)); if (!lines.length) return;
+    const bases = Object.entries(Orc.doc.bases).filter(([, id]) => id && Bases.data[id]); let ok = 0; const falta = [];
+    for (const cells of lines){
+      let rec = null, fonte = null, cod = null;
+      for (const c of cells){ if (!c || !/\d/.test(c) || c.length < 4 || c.length > 20 || /[,.]\d{1,2}$/.test(c)) continue;
+        for (const [f, id] of bases){ const r = Bases.find(Bases.data[id], c); if (r){ rec = { t:r.t, c:r.c, d:r.d, u:r.u }; fonte = f; cod = c; break; } }
+        if (!rec){ const p = Bases.propMap?.get(ckey(c)); if (p){ rec = { t:'C', c:p.codigo, d:p.descricao, u:p.unidade }; fonte = 'PRÓPRIA'; cod = c; } }
+        if (rec) break; }
+      if (!rec){ if (!/^(ITEM|CODIGO|CÓDIGO)$/i.test(cells[0])) falta.push(cells.find(Boolean)); continue; }
+      const nums = cells.filter(c => c !== cod).map(c => parseNum(c)).filter(v => !isNaN(v));
+      const it = Orc.addItem(rec, fonte, nums.length ? nums[nums.length - 1] : 0); if (fonte === 'PRÓPRIA') it.fonteLabel = 'PRÓPRIA'; ok++;
+    }
+    Orc.lastSel = [...Orc.sel][0]; this.refresh();
+    toast(`${ok} item(ns) colado(s)${falta.length ? ` · não encontrados: ${falta.slice(0, 6).join(', ')}${falta.length > 6 ? '…' : ''}` : ''}`, 6000); },
+  help(){
+    const k = (keys, t) => `<div><span>${t}</span><span>${keys.split(' + ').map(x => `<kbd>${x}</kbd>`).join(' ')}</span></div>`;
+    UI.modal(`<h2>Atalhos de teclado</h2><div class="keys">
+      <h3>Geral</h3>${k('Ctrl + K', 'Paleta de comandos')}${k('?', 'Esta lista')}${k('Alt + 1/2/3', 'Orçamentos / Composições / Bancos')}${k('Ctrl + S', 'Salvar')}${k('Ctrl + Shift + L', 'Alternar tema claro/escuro')}${k('Esc', 'Fechar janela / painel')}
+      <h3>Orçamento aberto</h3>${k('Alt + 1…6', 'Dados · Planilha · ABC · Cronograma · Medição · Relatórios')}${k('Ctrl + Z', 'Desfazer')}${k('Ctrl + Y', 'Refazer')}${k('Ctrl + Shift + S', 'Exportar para o Seobra')}${k('Ctrl + P', 'Ir para Relatórios')}
+      <h3>Planilha</h3>${k('↑ / ↓', 'Linha anterior / próxima')}${k('Shift + ↑ / ↓', 'Estender seleção')}${k('Home / End', 'Primeira / última linha')}${k('Ctrl + A', 'Selecionar tudo')}
+      ${k('Enter', 'Editar quantidade (etapa: título)')}${k('F2', 'Editar item / etapa')}${k('F4', 'Memória de cálculo do item')}${k('Insert', 'Inserir item (busca)')}
+      ${k('Ctrl + E', 'Nova etapa')}${k('Ctrl + Shift + E', 'Nova subetapa')}${k('Alt + ↑ / ↓', 'Mover linhas')}${k('Tab / Shift + Tab', 'Nível da etapa')}
+      ${k('Ctrl + D', 'Duplicar linhas')}${k('Delete', 'Excluir linhas')}${k('Ctrl + C', 'Copiar linhas (cola no Excel)')}${k('Ctrl + V', 'Colar código + quantidade do Excel')}${k('Ctrl + F', 'Filtrar na planilha')}
+      <h3>Quantidade e busca</h3>${k('Enter', 'Confirma e vai para a próxima')}${k('Esc', 'Cancela a edição')}${k('↑ / ↓ + Enter', 'Na busca: escolher e inserir')}${k('Ctrl + Enter', 'Na busca: inserir e continuar buscando')}
+      </div><div class="ft"><button class="btn pri" onclick="UI.closeModal()">Fechar</button></div>`, true);
+  },
+  decorate(){ // dicas de teclado nos botões
+    const hint = (sel, k) => { const b = $(sel); if (b && !b.querySelector('kbd')) b.insertAdjacentHTML('beforeend', `<kbd>${k}</kbd>`); };
+    hint('#t-add', 'Ins'); hint('#t-et', 'Ctrl E'); hint('#t-seobra', 'Ctrl ⇧ S');
+    $$('.subnav button[data-s]').forEach((b, i) => { if (!b.querySelector('.k')) b.insertAdjacentHTML('beforeend', `<span class="k">Alt ${i + 1}</span>`); });
+    const tb = $('#plan tbody'); if (tb && !tb._kb){ tb._kb = true;
+      tb.addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (!tr) return; if (!e.shiftKey) this.anchor = tr.dataset.id; this.paint(); });
+      tb.addEventListener('focusin', e => { const id = e.target.dataset?.q; if (id){ Orc.sel = new Set([id]); Orc.lastSel = id; this.anchor = id; this.paint(); } });
+      tb.addEventListener('keydown', e => { if (e.key === 'Escape' && e.target.dataset?.q){ const it = Orc.doc.itens[Orc.idx(e.target.dataset.q)]; e.target.value = it.qexpr || fq(it.qtd); e.stopPropagation(); e.target.blur(); }
+        if ((e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') && e.target.dataset?.q){ e.preventDefault(); e.stopImmediatePropagation();
+          const ins = $$('input.q', tb); const i = ins.indexOf(e.target); const n = ins[i + (e.key === 'ArrowUp' || (e.key === 'Enter' && e.shiftKey) ? -1 : 1)]; const nid = n?.dataset.q;
+          e.target.dispatchEvent(new Event('change', { bubbles:true }));
+          setTimeout(() => { const m = nid && $(`#plan input.q[data-q="${nid}"]`); if (m){ m.focus(); m.select(); } }, 0); } }, true);
+    }
+    this.paint(); this.fit();
+  },
+  key(e){
+    const k = e.key, ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && (k === 'k' || k === 'K')){ e.preventDefault(); Pal.open(); return; }
+    if (this.overlay()) return;
+    if (ctrl && e.shiftKey && (k === 'L' || k === 'l')){ e.preventDefault(); Theme.toggle(); return; }
+    if (this.typing(e)) return;
+    if (k === '?' ){ e.preventDefault(); this.help(); return; }
+    if (e.altKey && /^[1-6]$/.test(k)){ e.preventDefault(); const n = +k;
+      if (UI.view === 'orc'){ const s = ['dados', 'plan', 'abc', 'crono', 'med', 'rel'][n - 1]; UI.sub = s; UI.renderOrc($('#view')); }
+      else if (n <= 3) $$('#nav button')[n - 1]?.click(); return; }
+    if (UI.view === 'orc' && Orc.doc){
+      if (ctrl && !e.shiftKey && (k === 'z' || k === 'Z')){ e.preventDefault(); Hist.undo(); return; }
+      if (ctrl && (k === 'y' || k === 'Y' || (e.shiftKey && (k === 'z' || k === 'Z')))){ e.preventDefault(); Hist.redo(); return; }
+      if (ctrl && e.shiftKey && (k === 'S' || k === 's')){ e.preventDefault(); e.stopImmediatePropagation(); Seobra.exportar(); return; }
+      if (ctrl && (k === 'p' || k === 'P')){ e.preventDefault(); UI.sub = 'rel'; UI.renderOrc($('#view')); return; }
+    }
+    if (!this.inPlan() || $('#drawer').classList.contains('open')) return;
+    const id = this.cur();
+    if (k === 'ArrowDown' || k === 'ArrowUp'){
+      if (e.altKey){ e.preventDefault(); if (!Orc.sel.size) return; Orc.move(k === 'ArrowDown' ? 1 : -1); this.refresh(); this.reveal(id); return; }
+      e.preventDefault(); this.step(k === 'ArrowDown' ? 1 : -1, e.shiftKey); return; }
+    if (k === 'PageDown' || k === 'PageUp'){ e.preventDefault(); this.step(k === 'PageDown' ? 15 : -15, e.shiftKey); return; }
+    if (k === 'Home' || k === 'End'){ e.preventDefault(); const rows = this.rows(); if (rows.length) this.select(rows[k === 'Home' ? 0 : rows.length - 1].dataset.id, e.shiftKey); return; }
+    if (ctrl && (k === 'a' || k === 'A')){ e.preventDefault(); Orc.sel = new Set(this.rows().map(r => r.dataset.id)); this.paint(); return; }
+    if (ctrl && (k === 'd' || k === 'D')){ e.preventDefault(); this.dup(); return; }
+    if (ctrl && (k === 'f' || k === 'F')){ e.preventDefault(); $('#t-flt')?.focus(); $('#t-flt')?.select(); return; }
+    if (ctrl && (k === 'e' || k === 'E')){ e.preventDefault(); $(e.shiftKey ? '#t-sub' : '#t-et')?.click(); return; }
+    if (k === 'Tab' && [...Orc.sel].some(x => Orc.doc.itens[Orc.idx(x)]?.tipo === 'etapa')){ e.preventDefault(); Orc.indent(e.shiftKey ? -1 : 1); this.refresh(); return; }
+    if (!id) return;
+    const it = Orc.doc.itens[Orc.idx(id)];
+    if (k === 'Enter'){ e.preventDefault(); if (it.tipo === 'etapa') Plan.edit(id); else this.focusQty(id); return; }
+    if (k === 'F2'){ e.preventDefault(); Plan.edit(id); return; }
+    if (k === 'F4' && it.tipo !== 'etapa'){ e.preventDefault(); Plan.edit(id); setTimeout(() => { const m = $('#i-mem'); if (m){ m.focus(); m.scrollIntoView({ block:'center' }); } }, 60); return; }
+  },
+};
+document.addEventListener('keydown', e => Kb.key(e));
+window.addEventListener('resize', debounce(() => Kb.fit(), 120));
+document.addEventListener('copy', e => { if (Kb.inPlan() && !Kb.typing(e) && !Kb.overlay() && window.getSelection().isCollapsed) Kb.copy(e); });
+document.addEventListener('paste', e => { if (!Kb.inPlan() || Kb.typing(e) || Kb.overlay() || $('#drawer').classList.contains('open')) return;
+  const t = e.clipboardData.getData('text/plain'); if (t){ e.preventDefault(); Kb.paste(t); } });
+
+/* busca de itens (drawer) pelo teclado */
+(() => {
+  const q = $('#dr-q'); let on = -1;
+  const list = () => $$('#dr-res .res');
+  const mark = i => { const L = list(); if (!L.length) return; on = Math.max(0, Math.min(L.length - 1, i)); L.forEach((x, j) => x.classList.toggle('on', j === on)); const el = L[on], box = $('#dr-res'); if (el.offsetTop < box.scrollTop) box.scrollTop = el.offsetTop; else if (el.offsetTop + el.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = el.offsetTop + el.offsetHeight - box.clientHeight; };
+  new MutationObserver(() => { on = -1; if (list().length) mark(0); }).observe($('#dr-res'), { childList:true });
+  q.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); mark(on + (e.key === 'ArrowDown' ? 1 : -1)); }
+    else if (e.key === 'Enter'){ const el = list()[on]; if (!el) return; e.preventDefault(); el.click();
+      if (!(e.ctrlKey || e.metaKey)){ UI.closeDrawer(); if (Kb.inPlan()){ const id = [...Orc.sel][0]; setTimeout(() => { Orc.lastSel = id; Kb.paint(); Kb.focusQty(id); }, 30); } }
+      else { q.select(); } }
+  });
+  q.placeholder = 'Código ou descrição — ↑↓ escolhe, Enter insere, Ctrl+Enter insere e continua';
+})();
+
+/* paleta de comandos (Ctrl+K) */
+const Pal = {
+  items:[], on:0, orcs:null,
+  cmds(){
+    const C = [], add = (g, t, s, fn, kb='') => C.push({ g, t, s, fn, kb });
+    add('Ir para', 'Orçamentos', 'lista de orçamentos', () => UI.go('orcs'), 'Alt 1');
+    add('Ir para', 'Composições próprias', '', () => UI.go('proprias'), 'Alt 2');
+    add('Ir para', 'Bancos de preços', 'SINAPI, ORSE e bases importadas', () => UI.go('bases'), 'Alt 3');
+    if (Orc.doc && UI.view === 'orc'){
+      [['dados', 'Dados e BDI'], ['plan', 'Planilha'], ['abc', 'Curva ABC'], ['crono', 'Cronograma'], ['med', 'Medição'], ['rel', 'Relatórios']].forEach(([s, t], i) => add('Orçamento aberto', t, Orc.doc.nome, () => { UI.sub = s; UI.renderOrc($('#view')); }, 'Alt ' + (i + 1)));
+      const pl = fn => () => { if (UI.sub !== 'plan'){ UI.sub = 'plan'; UI.renderOrc($('#view')); } setTimeout(fn, 20); };
+      add('Ações', 'Inserir item da base', 'SINAPI / ORSE / própria', pl(() => $('#t-add').click()), 'Ins');
+      add('Ações', 'Nova etapa', '', pl(() => $('#t-et').click()), 'Ctrl E');
+      add('Ações', 'Nova subetapa', '', pl(() => $('#t-sub').click()), 'Ctrl ⇧ E');
+      add('Ações', 'Exportar para o Seobra', '.xlsx no formato da importação', () => Seobra.exportar(), 'Ctrl ⇧ S');
+      add('Ações', 'Gerar relatórios (Excel / PDF)', '', () => { UI.sub = 'rel'; UI.renderOrc($('#view')); }, 'Ctrl P');
+      add('Ações', 'Salvar agora', '', () => Orc.save(), 'Ctrl S');
+      add('Ações', 'Desfazer', `${Hist.u.length} passo(s)`, () => Hist.undo(), 'Ctrl Z');
+      add('Ações', 'Refazer', `${Hist.r.length} passo(s)`, () => Hist.redo(), 'Ctrl Y');
+      add('Ações', 'Usar preços da base nos itens importados', '', pl(() => $('#t-reprice').click()));
+    } else if (UI.view === 'orcs'){
+      add('Ações', 'Novo orçamento', '', () => $('#new-orc')?.click());
+      add('Ações', 'Novo pelo modelo SMS', '', () => $('#new-mod')?.click());
+      add('Ações', 'Importar planilha (.xlsx)', 'OrçaFascio, Seobra, PASSAREDO…', () => Importer.pickOrc());
+    }
+    add('Preferências', Theme.get() === 'dark' ? 'Tema claro' : 'Tema escuro', '', () => Theme.toggle(), 'Ctrl ⇧ L');
+    add('Preferências', 'Atalhos de teclado', '', () => Kb.help(), '?');
+    return C;
+  },
+  async open(){ $('#pal-bg').classList.add('open'); const q = $('#pal-q'); q.value = ''; q.focus(); this.render();
+    try { this.orcs = await Store.listOrcs(); this.render(); } catch(e){} },
+  close(){ $('#pal-bg').classList.remove('open'); },
+  render(){
+    const q = norm($('#pal-q').value).trim(), toks = q.split(/\s+/).filter(Boolean), m = s => toks.every(t => norm(s).includes(t));
+    let L = this.cmds().filter(c => m(c.t + ' ' + c.s + ' ' + c.g));
+    for (const o of (this.orcs || [])) if (m(o.nome) && (toks.length || L.length < 12)) L.push({ g:'Abrir orçamento', t:o.nome, s:'R$ ' + fm(o.resumo?.final ?? o.resumo?.total), fn:async () => { if (Orc.dirty) await Orc.save(); await Orc.open(o.id); UI.sub = 'plan'; UI.go('orc'); } });
+    if (Orc.doc && UI.view === 'orc' && q.length >= 2){ let n = 0;
+      for (const it of Orc.doc.itens){ const txt = it.tipo === 'etapa' ? it.titulo : it.descricao + ' ' + it.codigo;
+        if (m(it.num + ' ' + txt) && n++ < 40) L.push({ g:'Ir para linha da planilha', t:`${it.num}  ${it.tipo === 'etapa' ? it.titulo : it.descricao}`, s:it.tipo === 'etapa' ? 'etapa · R$ ' + fm(it._tot) : `${it.codigo} · ${fq(it.qtd)} ${it.unidade} · R$ ${fm(it._tot)}`,
+          fn:() => { Plan.filter = ''; UI.sub = 'plan'; UI.renderOrc($('#view')); setTimeout(() => { Kb.select(it.id); }, 20); } }); } }
+    L = L.slice(0, 80); this.items = L; this.on = 0; let g = '';
+    $('#pal-list').innerHTML = L.map((c, i) => `${c.g !== g ? `<div class="pal-g">${esc(g = c.g)}</div>` : ''}<div class="pal-i" data-i="${i}"><span class="t">${esc(c.t)}</span><span class="s">${esc(c.s || '')}</span>${c.kb ? `<kbd>${c.kb}</kbd>` : ''}</div>`).join('') || `<div class="empty">Nada encontrado</div>`;
+    $$('#pal-list .pal-i').forEach(el => { el.onmousemove = () => this.mark(+el.dataset.i, false); el.onclick = () => this.run(+el.dataset.i); });
+    this.mark(0);
+  },
+  mark(i, scroll=true){ const L = $$('#pal-list .pal-i'); if (!L.length) return; this.on = (i + L.length) % L.length; L.forEach((x, j) => x.classList.toggle('on', j === this.on)); scroll && L[this.on].scrollIntoView({ block:'nearest' }); },
+  run(i){ const c = this.items[i]; if (!c) return; this.close(); try { const r = c.fn(); r && r.catch && r.catch(e => toast(e.message)); } catch(e){ toast(e.message); } },
+};
+$('#pal-q').addEventListener('input', debounce(() => Pal.render(), 60));
+$('#pal-q').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); Pal.mark(Pal.on + (e.key === 'ArrowDown' ? 1 : -1)); }
+  else if (e.key === 'Enter'){ e.preventDefault(); Pal.run(Pal.on); }
+  else if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); Pal.close(); } });
+$('#pal-bg').addEventListener('mousedown', e => { if (e.target.id === 'pal-bg') Pal.close(); });
+$('#sb-pal').onclick = () => Pal.open(); $('#sb-keys').onclick = () => Kb.help(); $('#sb-theme').onclick = () => Theme.toggle(); Theme.set(Theme.get());
 
 /* =================== INÍCIO =================== */
 document.addEventListener('keydown', e => {
